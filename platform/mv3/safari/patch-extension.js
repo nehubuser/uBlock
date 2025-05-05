@@ -99,7 +99,6 @@ async function main() {
         fixLongDescriptions(),
         fixManifest(),
     ]);
-    
 }
 
 main();
