@@ -8,9 +8,9 @@ run_options := $(filter-out $@,$(MAKECMDGOALS))
 sources := ./dist/version $(shell find ./assets -type f) $(shell find ./src -type f)
 platform := $(wildcard platform/**/*)
 assets := dist/build/uAssets
-mv3-sources := $(shell find ./src -type f) $(shell find ./platform/mv3 -type f)
+mv3-sources := $(shell find ./src -type f) $(wildcard platform/mv3/*) $(shell find ./platform/mv3/extension -type f)
 mv3-data := $(shell find ./dist/build/mv3-data -type f)
-mv3-safari-deps := $(shell find ./platform/mv3/extension -type f) $(wildcard platform/mv3/safari/*)
+mv3-safari-deps := $(wildcard platform/mv3/safari/*)
 
 all: chromium firefox npm
 
