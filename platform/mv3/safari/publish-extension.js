@@ -88,8 +88,7 @@ async function getAssetInfo(assetName) {
     if ( releaseInfo === undefined ) { return; }
     if ( releaseInfo.assets === undefined ) { return; }
     for ( const asset of releaseInfo.assets ) {
-        if ( asset.name.includes(assetName) ) { continue; }
-        return asset;
+        if ( asset.name.includes(assetName) ) { return asset; }
     }
 }
 
@@ -285,13 +284,13 @@ async function main() {
             -project "${xcprojDir}" \\
             -scheme "uBlock Origin Lite (macOS)" \\
         `);
+        console.log(`Building app from ${buildNamePrefix}.macos.xarchive`);
+        execSync(`xcodebuild -exportArchive \\
+            -archivePath "${tempdirPath}/${buildNamePrefix}.macos.xcarchive" \\
+            -exportPath "${tempdirPath}/${buildNamePrefix}.macos" \\
+            -exportOptionsPlist "${xcodeDir}/exportOptionsAdHoc.macos.plist" \\
+        `);
         if ( commandLineArgs.publish === 'github' ) {
-            console.log(`Building app from ${buildNamePrefix}.macos.xarchive`);
-            execSync(`xcodebuild -exportArchive \\
-                -archivePath "${tempdirPath}/${buildNamePrefix}.macos.xcarchive" \\
-                -exportPath "${tempdirPath}/${buildNamePrefix}.macos" \\
-                -exportOptionsPlist "${xcodeDir}/exportOptionsAdHoc.macos.plist" \\
-            `);
             execSync(`cd "${tempdirPath}" && zip -r \\
                 "${buildNamePrefix}.macos.zip" \\
                 "${buildNamePrefix}.macos"/* \\
@@ -302,8 +301,10 @@ async function main() {
     }
 
     // Clean up
-    console.log(`Removing ${tempdirPath}`);
-    //execSync(`rm -rf "${tempdirPath}"`);
+    if ( commandLineArgs.keep !== true ) {
+        console.log(`Removing ${tempdirPath}`);
+        execSync(`rm -rf "${tempdirPath}"`);
+    }
 
     console.log('Done');
 }
