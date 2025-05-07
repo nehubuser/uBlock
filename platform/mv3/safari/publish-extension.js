@@ -66,8 +66,8 @@ async function getRepoRoot() {
 /******************************************************************************/
 
 async function getReleaseInfo() {
-    console.log(`Fetching release info for ${ubolVersion} from GitHub`);
-    const releaseInfoUrl =  `https://api.github.com/repos/${githubOwner}/${githubRepo}/releases/tags/${ubolVersion}`;
+    console.log(`Fetching release info for ${githubTag} from GitHub`);
+    const releaseInfoUrl =  `https://api.github.com/repos/${githubOwner}/${githubRepo}/releases/tags/${githubTag}`;
     const request = new Request(releaseInfoUrl, {
         headers: {
             Authorization: githubAuth,
@@ -142,7 +142,7 @@ async function uploadAssetToRelease(assetPath, mimeType) {
 /******************************************************************************/
 
 async function deleteAssetFromRelease(assetURL) {
-    print(`Remove ${assetURL} from GitHub release ${ubolVersion}...`);
+    print(`Remove ${assetURL} from GitHub release ${githubTag}...`);
     const request = new Request(assetURL, {
         headers: {
             Authorization: githubAuth,
@@ -162,22 +162,52 @@ async function getManifest(path) {
 
 /******************************************************************************/
 
-async function patchXcodeVersion(manifest, xcprojPath) {
-    let text = await fs.readFile(xcprojPath, { encoding: 'utf8' });
-    text = text.replaceAll(/MARKETING_VERSION = [^;]*;/g,
+// Project version is the number of 1-hour slices since first build
+
+function patchProjectVersion(manifest, text) {
+    const originDate = new Date('2022-09-06T17:47:52.000Z');
+    const match = /^(\d+)\.(\d+)\.(\d+)$/.exec(manifest.version);
+    const monthday = parseInt(match[2]);
+    const month = `${Math.floor(monthday / 100)}`.padStart(2, '0');
+    const day = `${monthday % 100}`.padStart(2, '0');
+    const dayminutes = parseInt(match[3]);
+    const hours = `${Math.floor(dayminutes / 60)}`.padStart(2, '0');
+    const minutes = `${dayminutes % 60}`.padStart(2, '0');
+    const manifestDate = new Date(`${match[1]}-${month}-${day}T${hours}:${minutes}`)
+    const buildNo = (manifestDate.getTime() - originDate.getTime()) / (60 * 60 * 1000);
+    return text.replaceAll(/\bCURRENT_PROJECT_VERSION = [^;]*;/g,
+        `CURRENT_PROJECT_VERSION = ${buildNo.toFixed(1)};`
+    );
+}
+
+function patchMarketingVersion(manifest, text) {
+    return text.replaceAll(/\bMARKETING_VERSION = [^;]*;/g,
         `MARKETING_VERSION = ${manifest.version};`
     );
-    if ( commandLineArgs.distribute !== undefined ) {
-        const match = /CURRENT_PROJECT_VERSION = ([^;]*);/.exec(text);
-        if ( match ) {
-            let buildNo = parseInt(match[1], 10) || 1;
-            buildNo += 1;
-            text = text.replaceAll(/CURRENT_PROJECT_VERSION = [^;]*;/g,
-                `CURRENT_PROJECT_VERSION = ${buildNo};`
-            );
-        }
-    }
+}
+
+async function patchXcodeVersion(manifest, xcprojPath) {
+    let text = await fs.readFile(xcprojPath, { encoding: 'utf8' });
+    text = patchMarketingVersion(manifest, text);
+    text = patchProjectVersion(manifest, text);
     await fs.writeFile(xcprojPath, text);
+}
+
+/******************************************************************************/
+
+async function shellExec(text) {
+    let command = '';
+    for ( const line of text.split(/[\n\r]+/) ) {
+        command += line.trimEnd();
+        if ( command.endsWith('\\') ) {
+            command = command.slice(0, -1);
+            continue;
+        }
+        command = command.trim();
+        if ( command === '' ) { continue; }
+        execSync(command);
+        command = '';
+    }
 }
 
 /******************************************************************************/
@@ -202,10 +232,10 @@ const commandLineArgs = (( ) => {
 /******************************************************************************/
 
 const secrets = await getSecrets();
-const githubOwner = commandLineArgs.githubOwner || '';
-const githubRepo = commandLineArgs.githubRepo || '';
+const githubOwner = commandLineArgs.ghowner || '';
+const githubRepo = commandLineArgs.ghrepo || '';
 const githubAuth = `Bearer ${secrets.github_token}`;
-const ubolVersion = commandLineArgs.tag;
+const githubTag = commandLineArgs.ghtag;
 const localRepoRoot = await getRepoRoot() || '';
 
 async function main() {
@@ -219,7 +249,7 @@ async function main() {
 
     console.log(`GitHub owner: "${githubOwner}"`);
     console.log(`GitHub repo: "${githubRepo}"`);
-    console.log(`Release tag: "${ubolVersion}"`);
+    console.log(`Release tag: "${githubTag}"`);
     console.log(`Release asset: "${assetInfo.name}"`);
     console.log(`Local repo root: "${localRepoRoot}"`);
 
@@ -229,7 +259,7 @@ async function main() {
     console.log('Asset saved at', filePath);
     const tempdirPath = path.dirname(filePath);
     await fs.mkdir(`${tempdirPath}/${assetName}`, { recursive: true });
-    execSync(`unzip "${filePath}" -d "${tempdirPath}/${assetName}"`);
+    shellExec(`unzip "${filePath}" -d "${tempdirPath}/${assetName}"`);
 
     const xcodeDir = `${localRepoRoot}/platform/mv3/safari/xcode`;
     const resourcesPath = `${xcodeDir}/Shared (Extension)/Resources/`;
@@ -241,6 +271,13 @@ async function main() {
     // Copy files to xcode/Shared (Extension)/Resources/
     console.log('Copy package files to', resourcesPath);
     execSync(`cp -R "${tempdirPath}/${assetName}/"* "${resourcesPath}"`);
+
+    // Patch extension to pass validation in Apple Store
+    console.log('Patch extension to pass validation in Apple Store');
+    shellExec(`node \\
+        "${localRepoRoot}/platform/mv3/safari/patch-extension.js" \\
+        packageDir="${resourcesPath}"
+    `);
 
     console.log('Read manifest', resourcesPath);
     const manifestPath = `${xcodeDir}/Shared (Extension)/Resources/manifest.json`;
@@ -257,7 +294,7 @@ async function main() {
     // Build for iOS
     if ( commandLineArgs.ios ) {
         console.log(`Building archive ${buildNamePrefix}.ios`);
-        execSync(`xcodebuild clean archive \\
+        shellExec(`xcodebuild clean archive \\
             -archivePath "${tempdirPath}/${buildNamePrefix}.ios" \\
             -configuration release \\
             -destination 'generic/platform=iOS' \\
@@ -266,7 +303,7 @@ async function main() {
         `);
         if ( commandLineArgs.publish === 'github' ) {
             console.log(`Building app from ${buildNamePrefix}.ios.xarchive`);
-            execSync(`xcodebuild -exportArchive \\
+            shellExec(`xcodebuild -exportArchive \\
                 -archivePath "${tempdirPath}/${buildNamePrefix}.ios.xcarchive" \\
                 -exportPath "${tempdirPath}/${buildNamePrefix}.ios" \\
                 -exportOptionsPlist "${xcodeDir}/exportOptionsAdHoc.ios.plist" \\
@@ -277,21 +314,20 @@ async function main() {
     // Build for MacOX
     if ( commandLineArgs.macos ) {
         console.log(`Building archive ${buildNamePrefix}.macos`);
-        execSync(`xcodebuild clean archive \\
-            -archivePath "${tempdirPath}/${buildNamePrefix}.macos" \\
+        shellExec(`xcodebuild clean archive \\
             -configuration release \\
             -destination 'generic/platform=macOS' \\
             -project "${xcprojDir}" \\
             -scheme "uBlock Origin Lite (macOS)" \\
         `);
-        console.log(`Building app from ${buildNamePrefix}.macos.xarchive`);
-        execSync(`xcodebuild -exportArchive \\
-            -archivePath "${tempdirPath}/${buildNamePrefix}.macos.xcarchive" \\
-            -exportPath "${tempdirPath}/${buildNamePrefix}.macos" \\
-            -exportOptionsPlist "${xcodeDir}/exportOptionsAdHoc.macos.plist" \\
-        `);
+        //console.log(`Building app from ${buildNamePrefix}.macos.xarchive`);
+        //shellExec(`xcodebuild -exportArchive \\
+        //    -archivePath "${tempdirPath}/${buildNamePrefix}.macos.xcarchive" \\
+        //    -exportPath "${tempdirPath}/${buildNamePrefix}.macos" \\
+        //    -exportOptionsPlist "${xcodeDir}/exportOptionsAdHoc.macos.plist" \\
+        //`);
         if ( commandLineArgs.publish === 'github' ) {
-            execSync(`cd "${tempdirPath}" && zip -r \\
+            shellExec(`cd "${tempdirPath}" && zip -r \\
                 "${buildNamePrefix}.macos.zip" \\
                 "${buildNamePrefix}.macos"/* \\
             `);
@@ -303,7 +339,7 @@ async function main() {
     // Clean up
     if ( commandLineArgs.keep !== true ) {
         console.log(`Removing ${tempdirPath}`);
-        execSync(`rm -rf "${tempdirPath}"`);
+        shellExec(`rm -rf "${tempdirPath}"`);
     }
 
     console.log('Done');
