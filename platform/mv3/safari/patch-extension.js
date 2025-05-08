@@ -25,7 +25,7 @@ import process from 'process';
 /******************************************************************************/
 
 const commandLineArgs = (( ) => {
-    const args = new Map();
+    const args = Object.create(null);
     let name, value;
     for ( const arg of process.argv.slice(2) ) {
         const pos = arg.indexOf('=');
@@ -36,7 +36,7 @@ const commandLineArgs = (( ) => {
             name = arg.slice(0, pos);
             value = arg.slice(pos+1);
         }
-        args.set(name, value);
+        args[name] = value;
     }
     return args;
 })();
@@ -65,7 +65,7 @@ async function fixLongDescription(path) {
 
 async function fixLongDescriptions() {
     const promises = [];
-    const packageDir = commandLineArgs.get('packageDir');
+    const packageDir = commandLineArgs.packageDir;
     const entries = await fs.readdir(`${packageDir}/_locales/`, { withFileTypes: true });
     for ( const entry of entries ) {
         if ( entry.isDirectory() === false ) { continue; }
@@ -79,7 +79,7 @@ async function fixLongDescriptions() {
 // Apple store rejects when version has four components.
 
 async function fixManifest() {
-    const packageDir = commandLineArgs.get('packageDir');
+    const packageDir = commandLineArgs.packageDir;
     const path = `${packageDir}/manifest.json`;
     let text = await fs.readFile(path, { encoding: 'utf8' });
     const manifest = JSON.parse(text);

@@ -166,17 +166,26 @@ async function getManifest(path) {
 
 function patchProjectVersion(manifest, text) {
     const originDate = new Date('2022-09-06T17:47:52.000Z');
-    const match = /^(\d+)\.(\d+)\.(\d+)$/.exec(manifest.version);
+    let match = /^(\d+)\.(\d+)\.(\d+)$/.exec(manifest.version);
+    if ( match === null ) {
+        match = /^(\d+)\.(\d+)\.(\d+)\.(\d+)$/.exec(manifest.version);
+        const month = parseInt(match[2], 10);
+        const day = parseInt(match[3], 10);
+        match = /^(\d+)\.(\d+)\.(\d+)$/.exec(`${match[1]}.${month*100+day}.${match[4]}`);
+    }
     const monthday = parseInt(match[2]);
     const month = `${Math.floor(monthday / 100)}`.padStart(2, '0');
     const day = `${monthday % 100}`.padStart(2, '0');
     const dayminutes = parseInt(match[3]);
-    const hours = `${Math.floor(dayminutes / 60)}`.padStart(2, '0');
-    const minutes = `${dayminutes % 60}`.padStart(2, '0');
+    const hours = `${Math.floor(dayminutes / 100)}`.padStart(2, '0');
+    const minutes = `${dayminutes % 100}`.padStart(2, '0');
     const manifestDate = new Date(`${match[1]}-${month}-${day}T${hours}:${minutes}`)
-    const buildNo = (manifestDate.getTime() - originDate.getTime()) / (60 * 60 * 1000);
+    const unitsPerDay = 24 * 60 * 60 * 1000;
+    const daysSinceOrigin = (manifestDate.getTime() - originDate.getTime()) / unitsPerDay;
+    const major = Math.floor(daysSinceOrigin);
+    const minor = match[3];
     return text.replaceAll(/\bCURRENT_PROJECT_VERSION = [^;]*;/g,
-        `CURRENT_PROJECT_VERSION = ${buildNo.toFixed(1)};`
+        `CURRENT_PROJECT_VERSION = ${major}.${minor};`
     );
 }
 
@@ -265,12 +274,16 @@ async function main() {
     const resourcesPath = `${xcodeDir}/Shared (Extension)/Resources/`;
 
     // Remove content of xcode/Shared (Extension)/Resources/
-    console.log('Remove content of', resourcesPath);
-    execSync(`rm -rf "${resourcesPath}/"*`);
+    //console.log('Remove content of', resourcesPath);
+    //execSync(`rm -rf "${resourcesPath}/"*`);
 
     // Copy files to xcode/Shared (Extension)/Resources/
     console.log('Copy package files to', resourcesPath);
-    execSync(`cp -R "${tempdirPath}/${assetName}/"* "${resourcesPath}"`);
+    shellExec(`
+        mkdir -p "${localRepoRoot}/dist/build/uBOLite.safari"
+        cp -R "${tempdirPath}/${assetName}/"* "${localRepoRoot}/dist/build/uBOLite.safari/"
+    `);
+    //execSync(`cp -R "${tempdirPath}/${assetName}/"* "${resourcesPath}"`);
 
     // Patch extension to pass validation in Apple Store
     console.log('Patch extension to pass validation in Apple Store');
@@ -295,7 +308,6 @@ async function main() {
     if ( commandLineArgs.ios ) {
         console.log(`Building archive ${buildNamePrefix}.ios`);
         shellExec(`xcodebuild clean archive \\
-            -archivePath "${tempdirPath}/${buildNamePrefix}.ios" \\
             -configuration release \\
             -destination 'generic/platform=iOS' \\
             -project "${xcprojDir}" \\
