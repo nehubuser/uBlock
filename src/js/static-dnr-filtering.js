@@ -226,6 +226,8 @@ function addExtendedToDNR(context, parser) {
     for ( const { hn, not, bad } of parser.getExtFilterDomainIterator() ) {
         if ( bad ) { continue; }
         if ( not && exception ) { continue; }
+        isGeneric = false;
+        // TODO: Support regex- and path-based entries
         if ( isRegexOrPath(hn) ) { continue; }
         if ( details === undefined ) {
             context.specificCosmeticFilters.set(compiled, details = {});
@@ -248,7 +250,6 @@ function addExtendedToDNR(context, parser) {
             details.matches = [ '*' ];
             continue;
         }
-        isGeneric = false;
         details.matches.push(hn);
     }
     if ( details === undefined ) { return; }
