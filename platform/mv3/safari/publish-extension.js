@@ -166,13 +166,7 @@ async function getManifest(path) {
 
 function patchProjectVersion(manifest, text) {
     const originDate = new Date('2022-09-06T17:47:52.000Z');
-    let match = /^(\d+)\.(\d+)\.(\d+)$/.exec(manifest.version);
-    if ( match === null ) {
-        match = /^(\d+)\.(\d+)\.(\d+)\.(\d+)$/.exec(manifest.version);
-        const month = parseInt(match[2], 10);
-        const day = parseInt(match[3], 10);
-        match = /^(\d+)\.(\d+)\.(\d+)$/.exec(`${match[1]}.${month*100+day}.${match[4]}`);
-    }
+    const match = /^(\d+)\.(\d+)\.(\d+)$/.exec(manifest.version);
     const monthday = parseInt(match[2]);
     const month = `${Math.floor(monthday / 100)}`.padStart(2, '0');
     const day = `${monthday % 100}`.padStart(2, '0');
@@ -270,20 +264,16 @@ async function main() {
     await fs.mkdir(`${tempdirPath}/${assetName}`, { recursive: true });
     shellExec(`unzip "${filePath}" -d "${tempdirPath}/${assetName}"`);
 
-    const xcodeDir = `${localRepoRoot}/platform/mv3/safari/xcode`;
-    const resourcesPath = `${xcodeDir}/Shared (Extension)/Resources/`;
-
-    // Remove content of xcode/Shared (Extension)/Resources/
-    //console.log('Remove content of', resourcesPath);
-    //execSync(`rm -rf "${resourcesPath}/"*`);
-
-    // Copy files to xcode/Shared (Extension)/Resources/
-    console.log('Copy package files to', resourcesPath);
+    // Copy files to local build directory
+    console.log(`Copy package files to "${localRepoRoot}/dist/build/uBOLite.safari"`);
     shellExec(`
+        rm -rf "${localRepoRoot}/dist/build/uBOLite.safari"
         mkdir -p "${localRepoRoot}/dist/build/uBOLite.safari"
         cp -R "${tempdirPath}/${assetName}/"* "${localRepoRoot}/dist/build/uBOLite.safari/"
     `);
-    //execSync(`cp -R "${tempdirPath}/${assetName}/"* "${resourcesPath}"`);
+
+    const xcodeDir = `${localRepoRoot}/platform/mv3/safari/xcode`;
+    const resourcesPath = `${xcodeDir}/Shared (Extension)/Resources/`;
 
     // Patch extension to pass validation in Apple Store
     console.log('Patch extension to pass validation in Apple Store');
@@ -349,7 +339,7 @@ async function main() {
     }
 
     // Clean up
-    if ( commandLineArgs.keep !== true ) {
+    if ( commandLineArgs.nocleanup !== true ) {
         console.log(`Removing ${tempdirPath}`);
         shellExec(`rm -rf "${tempdirPath}"`);
     }
