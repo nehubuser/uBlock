@@ -273,17 +273,17 @@ async function main() {
     `);
 
     const xcodeDir = `${localRepoRoot}/platform/mv3/safari/xcode`;
-    const resourcesPath = `${xcodeDir}/Shared (Extension)/Resources/`;
+    const resourcesPath = `${xcodeDir}/Shared (Extension)/Resources`;
 
     // Patch extension to pass validation in Apple Store
     console.log('Patch extension to pass validation in Apple Store');
     shellExec(`node \\
         "${localRepoRoot}/platform/mv3/safari/patch-extension.js" \\
-        packageDir="${resourcesPath}"
+        packageDir="${localRepoRoot}/dist/build/uBOLite.safari"
     `);
 
     console.log('Read manifest', resourcesPath);
-    const manifestPath = `${xcodeDir}/Shared (Extension)/Resources/manifest.json`;
+    const manifestPath = `${localRepoRoot}/dist/build/uBOLite.safari/manifest.json`;
     const manifest = await getManifest(manifestPath);
 
     // Patch xcode version, build number
