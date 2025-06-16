@@ -784,7 +784,7 @@
 		"contentURL": "https://raw.githubusercontent.com/DeepSpaceHarbor/Macedonian-adBlock-Filters/master/Filters",
 		"supportURL": "https://github.com/DeepSpaceHarbor/Macedonian-adBlock-Filters"
 	},
-	"NLD-0": {
+	"NPL-0": {
 		"content": "filters",
 		"group": "regions",
 		"off": true,
