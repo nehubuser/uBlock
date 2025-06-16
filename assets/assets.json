@@ -788,6 +788,17 @@
 		"content": "filters",
 		"group": "regions",
 		"off": true,
+		"title": "🇳🇵np: Nepal Filter List"",
+		"tags": "ads nepal",
+		"lang": "ne",
+		"contentURL": "https://raw.githubusercontent.com/nehubuser/Nepal-Filters/master/Nepal%20Filters.txt",
+		"cdnURLs": null,
+		"supportURL": "https://github.com/nehubuser/Nepal-Filters"
+	},
+	"NLD-0": {
+		"content": "filters",
+		"group": "regions",
+		"off": true,
 		"title": "🇳🇱nl 🇧🇪be: AdGuard Dutch",
 		"tags": "ads afrikaans be belgië frisian dutch flemish nederlands netherlands nl sr suriname za",
 		"lang": "af fy nl",
