@@ -784,6 +784,16 @@
 		"contentURL": "https://raw.githubusercontent.com/DeepSpaceHarbor/Macedonian-adBlock-Filters/master/Filters",
 		"supportURL": "https://github.com/DeepSpaceHarbor/Macedonian-adBlock-Filters"
 	},
+	"NPL-0": {
+		"content": "filters",
+		"group": "regions",
+		"off": true,
+		"title": "🇳🇵np: Nepal adblock Filters",
+		"tags": "ads nepali",
+		"lang": "ne",
+		"contentURL": "https://raw.githubusercontent.com/nehubuser/Nepal-Filters/refs/heads/master/Nepal%20Filters.txt",
+		"supportURL": "https://github.com/nehubuser/Nepal-Filters"
+	},
 	"NLD-0": {
 		"content": "filters",
 		"group": "regions",
