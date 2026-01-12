@@ -19,6 +19,10 @@
     "message": "Настройки",
     "description": "appears as tab name in dashboard"
   },
+  "customFiltersPageName": {
+    "message": "Персонализирани филтри",
+    "description": "appears as tab name in dashboard"
+  },
   "developPageName": {
     "message": "Разработка",
     "description": "appears as tab name in dashboard. Inspired from 'Develop' menu in Safari, see https://developer.apple.com/documentation/safari-developer-tools/develop-menu"
@@ -34,6 +38,10 @@
   "popupFilteringModeLabel": {
     "message": "режим на филтриране",
     "description": "Label in the popup panel for the current filtering mode"
+  },
+  "popupLocalToolsLabel": {
+    "message": "На този уебсайт",
+    "description": "Label in the popup panel for the local tools section"
   },
   "popupTipReport": {
     "message": "Докладване на проблем с този уебсайт",
@@ -78,6 +86,14 @@
   "3pGroupRegions": {
     "message": "Региони, езици",
     "description": "Header for a ruleset section in 'Filter lists pane'"
+  },
+  "customFiltersImportExportLabel": {
+    "message": "Импортиране / експортиране",
+    "description": "Text label heading the import/export area of custom filters"
+  },
+  "customFiltersImportTextareaPlaceholder": {
+    "message": "Поставете тук конкретни козметични филтри, които искате да добавите",
+    "description": "Placeholder text which describes the purpose of the textarea widget"
   },
   "aboutChangelog": {
     "message": "Списък с промени",
@@ -173,7 +189,7 @@
   },
   "supportReportSpecificButton": {
     "message": "Създаване на нов доклад",
-    "description": "Text for button which open an external webpage in Support pane"
+    "description": "Text for button which opens an external web page in Support pane"
   },
   "defaultFilteringModeSectionLabel": {
     "message": "Режим на филтриране по подразбиране",
@@ -247,13 +263,25 @@
     "message": "Активиране на достъпа до функции, подходящи за технически потребители.",
     "description": "Short description for a checkbox in the options page"
   },
+  "settingsBackupRestoreLabel": {
+    "message": "Архивиране",
+    "description": "The header text for the back up/restore section"
+  },
+  "settingsBackupRestoreSummary": {
+    "message": "Архивирайте персонализираните си настройки във файл или ги възстановете от файл.",
+    "description": "A summary description of the back up/restore section."
+  },
+  "settingsBackupRestoreLegend": {
+    "message": "Възстановяването ще презапише всичките ви текущи персонализирани настройки.",
+    "description": "Important information about the back up/restore section."
+  },
   "findListsPlaceholder": {
     "message": "Намиране на списъци",
     "description": "Placeholder for the input field used to find lists"
   },
   "strictblockTitle": {
     "message": "Страницата е блокирана",
-    "description": "Webpage title for the strict-blocked page"
+    "description": "Web page title for the strict-blocked page"
   },
   "strictblockSentence1": {
     "message": "uBO Lite попречи на зареждането на следната страница:",
@@ -273,7 +301,7 @@
   },
   "strictblockBack": {
     "message": "Назад",
-    "description": "A button to go back to the previous webpage"
+    "description": "A button to go back to the previous web page"
   },
   "strictblockClose": {
     "message": "Затворяне на прозореца",
@@ -294,6 +322,14 @@
   "zapperTipQuit": {
     "message": "Излизане от режима на временно скриване на елемента",
     "description": "Tooltip for the button used to exit zapper mode"
+  },
+  "pickerTipEnter": {
+    "message": "Създаване на персонализиран филтър",
+    "description": "Label for the menu entry to create cosmetic filters"
+  },
+  "unpickerTipEnter": {
+    "message": "Премахване на потребителски филтър",
+    "description": "Label for the menu entry to delete cosmetic filters"
   },
   "developDropdownLabel": {
     "message": "Преглед:",
@@ -327,6 +363,10 @@
     "message": "Връщане",
     "description": "Text for buttons used to revert changes"
   },
+  "addButton": {
+    "message": "Добавяне",
+    "description": "Text for buttons used to add content"
+  },
   "importAndAppendButton": {
     "message": "Импортиране и добавяне…",
     "description": "Text for buttons used to import and append content"
@@ -335,6 +375,22 @@
     "message": "Експортиране…",
     "description": "Text for buttons used to export content"
   },
+  "backupButton": {
+    "message": "Архивиране…",
+    "description": "Text for buttons used to back up content"
+  },
+  "restoreButton": {
+    "message": "Възстановяване…",
+    "description": "Text for buttons used to restore content"
+  },
+  "resetToDefaultButton": {
+    "message": "Възстановяване на първоначалните настройки…",
+    "description": "Text for buttons used to reset configurations to default"
+  },
+  "resetToDefaultConfirm": {
+    "message": "Всички ваши персонализирани настройки ще бъдат премахнати. Наистина ли искате да възстановите фабричните настройки?",
+    "description": "Message asking user to confirm reset to default settings"
+  },
   "dnrRulesWarning": {
     "message": "Не добавяйте съдържание от ненадеждни източници",
     "description": "Short description of the DNR rules editor pane"
@@ -342,5 +398,25 @@
   "dnrRulesCountInfo": {
     "message": "Брой регистрирани правила: {count}",
     "description": "Short sentence to report the number of currently registered DNR rules"
+  },
+  "pickerSliderLabel": {
+    "message": "Преместете плъзгача, за да изберете най-подходящото съответствие",
+    "description": "Label to describe the purpose of the slider"
+  },
+  "pickerPick": {
+    "message": "Избор",
+    "description": "Text for the button to re-enter element-picking mode"
+  },
+  "pickerPreview": {
+    "message": "Преглед",
+    "description": "Text for the button to activate preview mode"
+  },
+  "pickerCreate": {
+    "message": "Създаване",
+    "description": "Text for the button to create the filter"
+  },
+  "unpickerUsage": {
+    "message": "Изберете филтър по-долу, за да маркирате съвпадащите елементи в уеб страницата. Кликнете върху кошчето, за да премахнете филтъра.",
+    "description": "Summary description on how to use the tool to remove custom filters"
   }
 }

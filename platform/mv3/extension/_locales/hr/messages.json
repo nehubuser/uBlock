@@ -19,6 +19,10 @@
     "message": "Postavke",
     "description": "appears as tab name in dashboard"
   },
+  "customFiltersPageName": {
+    "message": "Prilagođeni filteri",
+    "description": "appears as tab name in dashboard"
+  },
   "developPageName": {
     "message": "Razvoj",
     "description": "appears as tab name in dashboard. Inspired from 'Develop' menu in Safari, see https://developer.apple.com/documentation/safari-developer-tools/develop-menu"
@@ -35,8 +39,12 @@
     "message": "Način filtriranja",
     "description": "Label in the popup panel for the current filtering mode"
   },
+  "popupLocalToolsLabel": {
+    "message": " Na ovoj web stranici",
+    "description": "Label in the popup panel for the local tools section"
+  },
   "popupTipReport": {
-    "message": "Prijavite problem na ovoj web stranici",
+    "message": "Prijavi problem",
     "description": "Tooltip used for the 'chat' icon in the panel"
   },
   "popupTipDashboard": {
@@ -78,6 +86,14 @@
   "3pGroupRegions": {
     "message": "Regije, jezici",
     "description": "Header for a ruleset section in 'Filter lists pane'"
+  },
+  "customFiltersImportExportLabel": {
+    "message": "Uvoz / Izvoz",
+    "description": "Text label heading the import/export area of custom filters"
+  },
+  "customFiltersImportTextareaPlaceholder": {
+    "message": "Ovdje zalijepite određene vizualne filtere koje želite dodati",
+    "description": "Placeholder text which describes the purpose of the textarea widget"
   },
   "aboutChangelog": {
     "message": "Popis promjena",
@@ -173,7 +189,7 @@
   },
   "supportReportSpecificButton": {
     "message": "Napravi novu prijavu na GitHub-u",
-    "description": "Text for button which open an external webpage in Support pane"
+    "description": "Text for button which opens an external web page in Support pane"
   },
   "defaultFilteringModeSectionLabel": {
     "message": "Zadani način filtriranja",
@@ -247,13 +263,25 @@
     "message": "Omogućuje pristup značajkama prikladnim za tehničke korisnike.",
     "description": "Short description for a checkbox in the options page"
   },
+  "settingsBackupRestoreLabel": {
+    "message": "Sigurnosna kopija",
+    "description": "The header text for the back up/restore section"
+  },
+  "settingsBackupRestoreSummary": {
+    "message": "Napravite sigurnosnu kopiju prilagođenih postavki u datoteku ili ih vratite iz datoteke.",
+    "description": "A summary description of the back up/restore section."
+  },
+  "settingsBackupRestoreLegend": {
+    "message": "Vraćanje će prebrisati sve vaše trenutne prilagođene postavke.",
+    "description": "Important information about the back up/restore section."
+  },
   "findListsPlaceholder": {
     "message": "Pronađi liste",
     "description": "Placeholder for the input field used to find lists"
   },
   "strictblockTitle": {
     "message": "Stranica blokirana",
-    "description": "Webpage title for the strict-blocked page"
+    "description": "Web page title for the strict-blocked page"
   },
   "strictblockSentence1": {
     "message": "uBO Lite je spriječio učitavanje sljedeće stranice:",
@@ -273,7 +301,7 @@
   },
   "strictblockBack": {
     "message": "Idi natrag",
-    "description": "A button to go back to the previous webpage"
+    "description": "A button to go back to the previous web page"
   },
   "strictblockClose": {
     "message": "Zatvori ovaj prozor",
@@ -288,12 +316,20 @@
     "description": "A button to navigate to the blocked page"
   },
   "zapperTipEnter": {
-    "message": "Ulaz u način rada uklanjanja elementa",
+    "message": "Ukloni element",
     "description": "Tooltip for the button used to enter zapper mode"
   },
   "zapperTipQuit": {
     "message": "Zatvori način rada uklanjanja elementa",
     "description": "Tooltip for the button used to exit zapper mode"
+  },
+  "pickerTipEnter": {
+    "message": "Napravi prilagođeni filter",
+    "description": "Label for the menu entry to create cosmetic filters"
+  },
+  "unpickerTipEnter": {
+    "message": "Ukloni prilagođeni filter",
+    "description": "Label for the menu entry to delete cosmetic filters"
   },
   "developDropdownLabel": {
     "message": "Pregled:",
@@ -327,6 +363,10 @@
     "message": "Poništi",
     "description": "Text for buttons used to revert changes"
   },
+  "addButton": {
+    "message": "Dodaj",
+    "description": "Text for buttons used to add content"
+  },
   "importAndAppendButton": {
     "message": "Uvesti i dodati...",
     "description": "Text for buttons used to import and append content"
@@ -335,6 +375,22 @@
     "message": "Izvoz...",
     "description": "Text for buttons used to export content"
   },
+  "backupButton": {
+    "message": "Sigurnosno kopiranje…",
+    "description": "Text for buttons used to back up content"
+  },
+  "restoreButton": {
+    "message": "Vraćanje…",
+    "description": "Text for buttons used to restore content"
+  },
+  "resetToDefaultButton": {
+    "message": "Resetiraj na zadane postavke…",
+    "description": "Text for buttons used to reset configurations to default"
+  },
+  "resetToDefaultConfirm": {
+    "message": "Sve Vaše prilagođene postavke će biti uklonjene. Želite li zaista resetirati na zadane postavke?",
+    "description": "Message asking user to confirm reset to default settings"
+  },
   "dnrRulesWarning": {
     "message": "Ne dodavajte sadržaj iz nepouzdanih izvora",
     "description": "Short description of the DNR rules editor pane"
@@ -342,5 +398,25 @@
   "dnrRulesCountInfo": {
     "message": "Broj registriranih pravila: {count}",
     "description": "Short sentence to report the number of currently registered DNR rules"
+  },
+  "pickerSliderLabel": {
+    "message": "Pomaknite klizač za odabir najboljeg podudaranja",
+    "description": "Label to describe the purpose of the slider"
+  },
+  "pickerPick": {
+    "message": "Odaberi",
+    "description": "Text for the button to re-enter element-picking mode"
+  },
+  "pickerPreview": {
+    "message": "Pregled",
+    "description": "Text for the button to activate preview mode"
+  },
+  "pickerCreate": {
+    "message": "Napravi",
+    "description": "Text for the button to create the filter"
+  },
+  "unpickerUsage": {
+    "message": "Odaberite filter u nastavku kako biste istaknuli odgovarajuće elemente na web stranici. Kliknite koš za smeće kako biste uklonili filter.",
+    "description": "Summary description on how to use the tool to remove custom filters"
   }
 }

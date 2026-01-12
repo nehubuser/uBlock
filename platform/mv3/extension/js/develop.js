@@ -21,9 +21,6 @@
 
 import { dom, qs$, qsa$ } from './dom.js';
 import { localRead, localWrite, sendMessage } from './ext.js';
-import { ModeEditor } from './mode-editor.js';
-import { ReadOnlyDNREditor } from './ro-dnr-editor.js';
-import { ReadWriteDNREditor } from './rw-dnr-editor.js';
 import { faIconsInit } from './fa-icons.js';
 import { i18n } from './i18n.js';
 
@@ -39,14 +36,21 @@ class Editor {
         this.ioPanel = self.cm6.createViewPanel();
         this.summaryPanel = self.cm6.createViewPanel();
         this.panels = [];
+        this.editors = {};
     }
 
     async init() {
-        this.editors = {
-             'modes': new ModeEditor(this),
-            'dnr.rw': new ReadWriteDNREditor(this),
-            'dnr.ro': new ReadOnlyDNREditor(this),
-        };
+        await Promise.all([
+            import('./mode-editor.js').then(module => {
+                this.editors['modes'] = new module.ModeEditor(this);
+            }),
+            import('./ro-dnr-editor.js').then(module => {
+                this.editors['dnr.ro'] = new module.ReadOnlyDNREditor(this);
+            }),
+            import('./rw-dnr-editor.js').then(module => {
+                this.editors['dnr.rw'] = new module.ReadWriteDNREditor(this);
+            }),
+        ]);
         const rulesetDetails = await sendMessage({ what: 'getRulesetDetails' });
         const parent = qs$('#editors optgroup');
         for ( const details of rulesetDetails ) {
@@ -504,7 +508,7 @@ class Editor {
             }
         }
         view.dispatch({
-            selection: { anchor: from, head: to+1 }
+            selection: { anchor: from, head: Math.min(to+1, doc.length) }
         });
         view.focus();
         return true;
@@ -513,7 +517,7 @@ class Editor {
     importFromFile() {
         const editor = this.editor;
         if ( typeof editor.importFromFile !== 'function' ) { return; }
-        const input = qs$('input[type="file"]');
+        const input = qs$('section[data-pane="develop"] input[type="file"]');
         input.accept = editor.ioAccept || '';
         input.onchange = ev => {
             input.onchange = null;
@@ -553,35 +557,33 @@ class Editor {
         },
         token: (stream, state) => {
             if ( stream.sol() ) {
-                if ( stream.match(/^---\s*$/) ) { return 'meta'; }
-                if ( stream.match(/^# ---\s*$/) ) { return 'meta comment'; }
-                if ( stream.match(/\.\.\.\s*$/) ) { return 'meta'; }
+                if ( stream.match(/^---\s*$/) ) { return 'ubol-boundary'; }
+                if ( stream.match(/^# ---\s*$/) ) { return 'ubol-boundary ubol-comment'; }
+                if ( stream.match(/\.\.\.\s*$/) ) { return 'ubol-boundary'; }
             }
             const c = stream.peek();
             if ( c === '#' ) {
                 if ( (stream.pos === 0 || /\s/.test(stream.string.charAt(stream.pos - 1))) ) {
                     stream.skipToEnd();
-                    return 'comment';
+                    return 'ubol-comment';
                 }
             }
-            if ( stream.eatSpace() ) {
-                return null;
-            }
+            if ( stream.eatSpace() ) { return null; }
             const { scope } = state;
             state.scope = 0;
             if ( scope === 0 && stream.match(/^[^:]+(?=:)/) ) {
                 state.scope = 1;
-                return 'keyword';
+                return 'ubol-keyword';
             }
             if ( scope === 1 && stream.match(/^:(?: |$)/) ) {
-                return 'punctuation';
+                return 'ubol-punctuation';
             }
             if ( stream.match(/^- /) ) {
-                return 'punctuation';
+                return 'ubol-punctuation';
             }
             if ( this.editor.streamParserKeywords ) {
                 if ( stream.match(this.editor.streamParserKeywords) ) {
-                    return 'literal';
+                    return 'ubol-literal';
                 }
             }
             if ( stream.match(/^\S+/) ) {
@@ -593,6 +595,13 @@ class Editor {
         languageData: {
             commentTokens: { line: '#' },
         },
+        tokenTable: [
+            'ubol-boundary',
+            'ubol-keyword',
+            'ubol-comment',
+            'ubol-punctuation',
+            'ubol-literal',
+        ],
     };
 }
 
@@ -610,15 +619,6 @@ async function start() {
     });
 }
 
-let observer = new IntersectionObserver(entries => {
-    for ( const entry of entries ) {
-        if ( entry.isIntersecting === false ) { continue; }
-        start();
-        observer.disconnect();
-        observer = null;
-        break;
-    }
-});
-observer.observe(qs$('section[data-pane="develop"]'));
+dom.onFirstShown(start, qs$('section[data-pane="develop"]'));
 
 /******************************************************************************/

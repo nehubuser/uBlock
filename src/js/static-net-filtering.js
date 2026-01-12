@@ -300,9 +300,8 @@ const $httpHeaders = {
     },
     lookup(name) {
         if ( this.parsed.size === 0 ) {
-            for ( let i = 0, n = this.headers.length; i < n; i++ ) {
-                const { name, value } = this.headers[i];
-                this.parsed.set(name, value);
+            for ( const { name, value } of this.headers ) {
+                this.parsed.set(name.toLowerCase(), value);
             }
         }
         return this.parsed.get(name);
@@ -411,6 +410,9 @@ class LogData {
         }
         this.raw = raw;
         this.regex = logData.regex.join('');
+        if ( logData.reason ) {
+            this.reason = logData.reason;
+        }
     }
     isUntokenized() {
         return this.tokenHash === NO_TOKEN_HASH;
@@ -1229,7 +1231,6 @@ class FilterRegex {
             );
         }
         if ( refs.$re.test($requestURLRaw) === false ) { return false; }
-        $patternMatchLeft = $requestURLRaw.search(refs.$re);
         return true;
     }
 
@@ -3113,7 +3114,7 @@ class FilterMessage {
     static compile(details) {
         return [
             FilterMessage.fid,
-            encodeURIComponent(details.optionValues.get('message')),
+            encodeURIComponent(details.optionValues.get('reason')),
         ];
     }
 
@@ -3127,11 +3128,11 @@ class FilterMessage {
     }
 
     static logData(idata, details) {
-        const msg = bidiTrie.extractString(
-                filterData[idata+1],
-                filterData[idata+2]
+        const reason = decodeURIComponent(
+            bidiTrie.extractString(filterData[idata+1], filterData[idata+2])
         );
-        details.options.push(`message=${decodeURIComponent(msg)}`);
+        details.reason = reason;
+        details.options.push(`reason=${reason}`);
     }
 }
 
@@ -3612,10 +3613,6 @@ class FilterCompiler {
             this.optionValues.set('ipaddress', parser.getNetOptionValue(id) || '');
             this.optionUnitBits |= IPADDRESS_BIT;
             break;
-        case sfp.NODE_TYPE_NET_OPTION_NAME_MESSAGE:
-            this.optionValues.set('message', parser.getNetOptionValue(id));
-            this.optionUnitBits |= MESSAGE_BIT;
-            break;
         case sfp.NODE_TYPE_NET_OPTION_NAME_METHOD:
             this.processMethodOption(parser.getNetOptionValue(id));
             this.optionUnitBits |= METHOD_BIT;
@@ -3630,6 +3627,10 @@ class FilterCompiler {
                 return false;
             }
             this.optionUnitBits |= MODIFY_BIT;
+            break;
+        case sfp.NODE_TYPE_NET_OPTION_NAME_REASON:
+            this.optionValues.set('reason', parser.getNetOptionValue(id));
+            this.optionUnitBits |= MESSAGE_BIT;
             break;
         case sfp.NODE_TYPE_NET_OPTION_NAME_REDIRECT: {
             const actualId = this.action === ALLOW_REALM
@@ -3737,9 +3738,9 @@ class FilterCompiler {
             case sfp.NODE_TYPE_NET_OPTION_NAME_FROM:
             case sfp.NODE_TYPE_NET_OPTION_NAME_HEADER:
             case sfp.NODE_TYPE_NET_OPTION_NAME_IPADDRESS:
-            case sfp.NODE_TYPE_NET_OPTION_NAME_MESSAGE:
             case sfp.NODE_TYPE_NET_OPTION_NAME_METHOD:
             case sfp.NODE_TYPE_NET_OPTION_NAME_PERMISSIONS:
+            case sfp.NODE_TYPE_NET_OPTION_NAME_REASON:
             case sfp.NODE_TYPE_NET_OPTION_NAME_REDIRECT:
             case sfp.NODE_TYPE_NET_OPTION_NAME_REDIRECTRULE:
             case sfp.NODE_TYPE_NET_OPTION_NAME_REMOVEPARAM:
@@ -4527,14 +4528,14 @@ StaticNetFilteringEngine.prototype.dnrFromCompiled = function(op, context, ...ar
         [ ALLOW_REALM, { type: 'allow', priority: 30 } ],
         [ BLOCK_REALM | IMPORTANT_REALM, { type: 'block', priority: 10 } ],
         [ REDIRECT_REALM, { type: 'redirect', priority: 11 } ],
-        [ REMOVEPARAM_REALM, { type: 'removeparam', priority: 0 } ],
-        [ CSP_REALM, { type: 'csp', priority: 0 } ],
-        [ PERMISSIONS_REALM, { type: 'permissions', priority: 0 } ],
-        [ URLTRANSFORM_REALM, { type: 'uritransform', priority: 0 } ],
+        [ REMOVEPARAM_REALM, { type: 'removeparam', priority: 1 } ],
+        [ CSP_REALM, { type: 'csp', priority: 1 } ],
+        [ PERMISSIONS_REALM, { type: 'permissions', priority: 1 } ],
+        [ URLTRANSFORM_REALM, { type: 'uritransform', priority: 1 } ],
         [ HEADERS_REALM, { type: 'block', priority: 10 } ],
         [ HEADERS_REALM | ALLOW_REALM, { type: 'allow', priority: 30 } ],
         [ HEADERS_REALM | IMPORTANT_REALM, { type: 'allow', priority: 10 } ],
-        [ URLSKIP_REALM, { type: 'urlskip', priority: 0 } ],
+        [ URLSKIP_REALM, { type: 'urlskip', priority: 1 } ],
     ]);
     const partyness = new Map([
         [ ANYPARTY_REALM, '' ],
@@ -4593,9 +4594,11 @@ StaticNetFilteringEngine.prototype.dnrFromCompiled = function(op, context, ...ar
     seen.clear();
 
     // Adjust `important` priority
+    // Mind:
+    // - https://github.com/uBlockOrigin/uAssets/issues/29451#issuecomment-3150181993
     for ( const rule of ruleset ) {
         if ( rule.__important !== true ) { continue; }
-        if ( rule.priority === undefined ) { continue; }
+        rule.priority ??= 0;
         rule.priority += 30;
     }
 
@@ -4706,7 +4709,7 @@ StaticNetFilteringEngine.prototype.dnrFromCompiled = function(op, context, ...ar
             if ( token !== '' ) {
                 const match = /:(\d+)$/.exec(token);
                 if ( match !== null ) {
-                    rule.priority += Math.min(rule.priority + parseInt(match[1], 10), 9);
+                    rule.priority += Math.min(parseInt(match[1], 10), 8);
                     token = token.slice(0, match.index);
                 }
             }
@@ -4726,19 +4729,20 @@ StaticNetFilteringEngine.prototype.dnrFromCompiled = function(op, context, ...ar
         }
         case 'removeparam': {
             rule.action.type = 'redirect';
-            if ( rule.__modifierValue === '|' ) {
-                rule.__modifierValue = '';
+            let paramName = rule.__modifierValue;
+            if ( paramName === '|' ) {
+                paramName = '';
             }
-            if ( rule.__modifierValue !== '' ) {
+            if ( paramName !== '' ) {
                 rule.action.redirect = {
                     transform: {
                         queryTransform: {
-                            removeParams: [ rule.__modifierValue ]
+                            removeParams: [ paramName ]
                         }
                     }
                 };
-                if ( /^~?\/.+\/$/.test(rule.__modifierValue) ) {
-                    dnrAddRuleError(rule, `Unsupported regex-based removeParam: ${rule.__modifierValue}`);
+                if ( /^~?\/.+\/$/.test(paramName) ) {
+                    dnrAddRuleError(rule, `Unsupported regex-based removeParam: ${paramName}`);
                 }
             } else {
                 rule.action.redirect = {
@@ -4760,15 +4764,13 @@ StaticNetFilteringEngine.prototype.dnrFromCompiled = function(op, context, ...ar
                     ];
                 }
             }
-            // https://github.com/uBlockOrigin/uBOL-home/issues/140
-            //   Mitigate until DNR API flaw is addressed by browser vendors
-            let priority = rule.priority || 1;
-            if ( rule.condition.urlFilter !== undefined ) { priority += 1; }
-            if ( rule.condition.regexFilter !== undefined ) { priority += 1; }
-            if ( rule.condition.initiatorDomains !== undefined ) { priority += 1; }
-            if ( rule.condition.requestDomains !== undefined ) { priority += 1; }
-            if ( priority !== 1 ) {
-                rule.priority = priority;
+            // https://github.com/uBlockOrigin/uBOL-home/discussions/575
+            if ( rule.condition.urlFilter === undefined ) {
+                if ( rule.condition.regexFilter === undefined ) {
+                    if ( paramName !== '' ) {
+                        rule.condition.urlFilter = `^${paramName}=`;
+                    }
+                }
             }
             if ( rule.__modifierAction === ALLOW_REALM ) {
                 dnrAddRuleError(rule, `Unsupported removeparam exception: ${rule.__modifierValue}`);
@@ -4776,7 +4778,19 @@ StaticNetFilteringEngine.prototype.dnrFromCompiled = function(op, context, ...ar
             break;
         }
         case 'uritransform': {
-            dnrAddRuleError(rule, `Incompatible with DNR: uritransform=${rule.__modifierValue}`);
+            const parsed = sfp.parseReplaceByRegexValue(rule.__modifierValue);
+            if ( parsed.re !== undefined ) {
+                dnrAddRuleError(rule, `Incompatible with DNR: uritransform=${rule.__modifierValue}`);
+                break;
+            }
+            if ( rule.condition.regexFilter === undefined ) {
+                dnrAddRuleError(rule, `Incompatible with DNR (need regexFilter): uritransform=${rule.__modifierValue}`);
+                break;
+            }
+            rule.action.type = 'redirect';
+            rule.action.redirect = {
+                regexSubstitution: parsed.replacement.replace(/\$(\d+)/g, '\\$1')
+            };
             break;
         }
         case 'urlskip': {
@@ -4817,6 +4831,12 @@ StaticNetFilteringEngine.prototype.dnrFromCompiled = function(op, context, ...ar
                 rule.condition.excludedRequestDomains.push(...notDomains);
             }
         }
+    }
+
+    // Default priority is 1, remove priority if 1 or less.
+    for ( const rule of ruleset ) {
+        if ( rule.priority > 1 ) { continue; }
+        rule.priority = undefined;
     }
 
     return {
@@ -5149,8 +5169,7 @@ StaticNetFilteringEngine.prototype.matchAndFetchModifiers = function(
                     toRemove.delete(key);
                 }
             }
-        }
-        else if ( toAdd.size !== 0 ) {
+        } else if ( toAdd.size !== 0 ) {
             toAdd.clear();
             if ( toRemove.size !== 1 ) {
                 const entry = toRemove.get('');
@@ -5423,6 +5442,7 @@ StaticNetFilteringEngine.prototype.matchHeaders = function(fctxt, headers) {
     $requestMethodBit = fctxt.method || 0;
     $requestTypeValue = (typeBits & TYPE_REALM) >>> TYPE_REALM_OFFSET;
     $requestAddress = fctxt.getIPAddress();
+    $isBlockImportant = false;
     $httpHeaders.init(headers);
 
     let r = 0;
@@ -5492,7 +5512,7 @@ function compareRedirectRequests(redirectEngine, a, b) {
 
 /******************************************************************************/
 
-StaticNetFilteringEngine.prototype.transformRequest = function(fctxt, out = []) {
+StaticNetFilteringEngine.prototype.transformURL = function(fctxt, out = []) {
     const directives = this.matchAndFetchModifiers(fctxt, 'uritransform');
     if ( directives === undefined ) { return; }
     const redirectURL = new URL(fctxt.url);
@@ -5506,17 +5526,21 @@ StaticNetFilteringEngine.prototype.transformRequest = function(fctxt, out = []) 
         }
         const cache = directive.cache;
         if ( cache === undefined ) { continue; }
-        const before = `${redirectURL.pathname}${redirectURL.search}${redirectURL.hash}`;
-        if ( cache.re.test(before) !== true ) { continue; }
-        const after = before.replace(cache.re, cache.replacement);
+        let { re } = cache;
+        const before = redirectURL.href;
+        if ( re === undefined ) {
+            const logdata = directive.logData();
+            if ( logdata === undefined ) { continue; }
+            try { re = new RegExp(logdata.regex, cache.flags); }
+            catch { continue; }
+        }
+        if ( re.test(before) !== true ) { continue; }
+        const after = before.replace(re, cache.replacement);
+        try { void new URL(after); } catch { continue; }
         if ( after === before ) { continue; }
-        const hashPos = after.indexOf('#');
-        redirectURL.hash = hashPos !== -1 ? after.slice(hashPos) : '';
-        const afterMinusHash = hashPos !== -1 ? after.slice(0, hashPos) : after;
-        const searchPos = afterMinusHash.indexOf('?');
-        redirectURL.search = searchPos !== -1 ? afterMinusHash.slice(searchPos) : '';
-        redirectURL.pathname = searchPos !== -1 ? after.slice(0, searchPos) : after;
+        redirectURL.href = after;
         out.push(directive);
+        break;
     }
     if ( out.length === 0 ) { return; }
     if ( redirectURL.href !== fctxt.url ) {
@@ -5566,7 +5590,7 @@ StaticNetFilteringEngine.prototype.filterQuery = function(fctxt, out = []) {
     if ( qpos === -1 ) { return; }
     let hpos = url.indexOf('#', qpos + 1);
     if ( hpos === -1 ) { hpos = url.length; }
-    const params = new Map();
+    const params = [];
     const query = url.slice(qpos + 1, hpos);
     for ( let i = 0; i < query.length; ) {
         let pos = query.indexOf('&', i);
@@ -5575,14 +5599,14 @@ StaticNetFilteringEngine.prototype.filterQuery = function(fctxt, out = []) {
         i = pos + 1;
         pos = kv.indexOf('=');
         if ( pos !== -1 ) {
-            params.set(kv.slice(0, pos), kv.slice(pos + 1));
+            params.push(kv.slice(0, pos), kv.slice(pos + 1));
         } else {
-            params.set(kv, '');
+            params.push(kv, '');
         }
     }
-    const inParamCount = params.size;
+    const beforeParamCount = params.length;
     for ( const directive of directives ) {
-        if ( params.size === 0 ) { break; }
+        if ( params.length === 0 ) { break; }
         const isException = (directive.bits & ALLOW_REALM) !== 0;
         if ( isException && directive.value === '' ) {
             out.push(directive);
@@ -5591,35 +5615,29 @@ StaticNetFilteringEngine.prototype.filterQuery = function(fctxt, out = []) {
         const { all, bad, name, not, re } = parseQueryPruneValue(directive);
         if ( bad ) { continue; }
         if ( all ) {
-            if ( isException === false ) { params.clear(); }
+            if ( isException === false ) { params.length = 0; }
             out.push(directive);
             break;
         }
-        if ( name !== undefined ) {
-            const value = params.get(name);
-            if ( not === false ) {
-                if ( value !== undefined ) {
-                    if ( isException === false ) { params.delete(name); }
-                    out.push(directive);
-                }
-                continue;
-            }
-            if ( value !== undefined ) { params.delete(name); }
-            if ( params.size !== 0 ) {
-                if ( isException === false ) { params.clear(); }
-                out.push(directive);
-            }
-            if ( value !== undefined ) { params.set(name, value); }
-            continue;
-        }
-        if ( re === undefined ) { continue; }
         let filtered = false;
-        for ( const [ key, raw ] of params ) {
-            let value = raw;
-            try { value = decodeURIComponent(value); }
-            catch { }
-            if ( re.test(`${key}=${value}`) === not ) { continue; }
-            if ( isException === false ) { params.delete(key); }
+        let matched = false;
+        let i = params.length;
+        while ( i > 0 ) {
+            i -= 2;
+            if ( name !== undefined ) {
+                matched = params[i] === name;
+            } else if ( re !== undefined ) {
+                const key = params[i+0];
+                const raw = params[i+1];
+                let value = raw;
+                try { value = decodeURIComponent(value); }
+                catch { }
+                matched = re.test(`${key}=${value}`);
+            }
+            if ( matched === not ) { continue; }
+            if ( isException === false ) {
+                params.splice(i, 2);
+            }
             filtered = true;
         }
         if ( filtered ) {
@@ -5627,12 +5645,16 @@ StaticNetFilteringEngine.prototype.filterQuery = function(fctxt, out = []) {
         }
     }
     if ( out.length === 0 ) { return; }
-    if ( params.size !== inParamCount ) {
+    if ( params.length !== beforeParamCount ) {
         fctxt.redirectURL = url.slice(0, qpos);
-        if ( params.size !== 0 ) {
-            fctxt.redirectURL += '?' + Array.from(params).map(a =>
-                a[1] === '' ? `${a[0]}=` : `${a[0]}=${a[1]}`
-            ).join('&');
+        if ( params.length !== 0 ) {
+            const queryParts = [];
+            for ( let i = 0; i < params.length; i += 2 ) {
+                const key = params[i+0];
+                const val = params[i+1];
+                queryParts.push(val !== '' ? `${key}=${val}` : key);
+            }
+            fctxt.redirectURL += '?' + queryParts.join('&');
         }
         if ( hpos !== url.length ) {
             fctxt.redirectURL += url.slice(hpos);
@@ -5716,7 +5738,7 @@ StaticNetFilteringEngine.prototype.test = function(details) {
         out.push('not blocked');
     }
     if ( r !== 1 ) {
-        const entries = this.transformRequest(fctxt);
+        const entries = this.transformURL(fctxt);
         if ( entries ) {
             for ( const entry of entries ) {
                 out.push(`modified: ${entry.logData().raw}`);

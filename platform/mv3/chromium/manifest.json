@@ -15,6 +15,9 @@
   "commands": {
     "enter-zapper-mode": {
       "description": "__MSG_zapperTipEnter__"
+    },
+    "enter-picker-mode": {
+      "description": "__MSG_pickerTipEnter__"
     }
   },
   "declarative_net_request": {
@@ -26,6 +29,7 @@
   "host_permissions": [
     "<all_urls>"
   ],
+  "incognito": "split",
   "icons": {
     "16": "img/icon_16.png",
     "32": "img/icon_32.png",
@@ -60,6 +64,24 @@
     {
       "resources": [
         "/zapper-ui.html"
+      ],
+      "matches": [
+        "<all_urls>"
+      ],
+      "use_dynamic_url": true
+    },
+    {
+      "resources": [
+        "/picker-ui.html"
+      ],
+      "matches": [
+        "<all_urls>"
+      ],
+      "use_dynamic_url": true
+    },
+    {
+      "resources": [
+        "/unpicker-ui.html"
       ],
       "matches": [
         "<all_urls>"

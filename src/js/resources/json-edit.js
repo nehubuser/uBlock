@@ -21,6 +21,7 @@
 */
 
 import {
+    collateFetchArgumentsFn,
     matchObjectPropertiesFn,
     parsePropertiesToMatchFn,
 } from './utils.js';
@@ -51,12 +52,13 @@ function editOutboundObjectFn(
     }
     proxyApplyFn(propChain, function(context) {
         const obj = context.reflect();
-        if ( jsonp.apply(obj) === 0 ) { return obj; }
+        const objAfter = jsonp.apply(obj);
+        if ( objAfter === undefined ) { return obj; }
         safe.uboLog(logPrefix, 'Edited');
         if ( safe.logLevel > 1 ) {
-            safe.uboLog(logPrefix, `After edit:\n${safe.JSON_stringify(obj, null, 2)}`);
+            safe.uboLog(logPrefix, `After edit:\n${safe.JSON_stringify(objAfter, null, 2)}`);
         }
-        return obj;
+        return objAfter;
     });
 }
 registerScriptlet(editOutboundObjectFn, {
@@ -75,6 +77,9 @@ registerScriptlet(editOutboundObjectFn, {
  * @description
  * Prune properties from an object returned by a specific method.
  * Properties can only be removed.
+ * 
+ * @param propChain
+ * Property chain of the method to trap.
  * 
  * @param jsonq
  * A uBO-flavored JSONPath query.
@@ -96,10 +101,13 @@ registerScriptlet(editOutboundObject, {
  * @scriptlet trusted-edit-outbound-object.js
  * 
  * @description
- * Edit properties from an object returned by a specific method.
+ * Edit properties of an object returned by a specific method.
  * Properties can be assigned new values.
  * 
- * @param jsonq
+  * @param propChain
+ * Property chain of the method to trap.
+ * 
+* @param jsonq
  * A uBO-flavored JSONPath query.
  * 
  * */
@@ -166,6 +174,133 @@ registerScriptlet(trustedJsonEdit, {
 /******************************************************************************/
 /******************************************************************************/
 
+function editInboundObjectFn(
+    trusted = false,
+    propChain = '',
+    argPosRaw = '',
+    jsonq = '',
+) {
+    if ( propChain === '' ) { return; }
+    const safe = safeSelf();
+    const logPrefix = safe.makeLogPrefix(
+        `${trusted ? 'trusted-' : ''}edit-inbound-object`,
+        propChain,
+        jsonq
+    );
+    const jsonp = JSONPath.create(jsonq);
+    if ( jsonp.valid === false || jsonp.value !== undefined && trusted !== true ) {
+        return safe.uboLog(logPrefix, 'Bad JSONPath query');
+    }
+    const argPos = parseInt(argPosRaw, 10);
+    if ( isNaN(argPos) ) { return; }
+    const getArgPos = args => {
+        if ( Array.isArray(args) === false ) { return; }
+        if ( argPos >= 0 ) {
+            if ( args.length <= argPos ) { return; }
+            return argPos;
+        }
+        if ( args.length < -argPos ) { return; }
+        return args.length + argPos;
+    };
+    const editObj = obj => {
+        let clone;
+        try {
+            clone = safe.JSON_parse(safe.JSON_stringify(obj));
+        } catch {
+        }
+        if ( typeof clone !== 'object' || clone === null ) { return; }
+        const objAfter = jsonp.apply(clone);
+        if ( objAfter === undefined ) { return; }
+        safe.uboLog(logPrefix, 'Edited');
+        if ( safe.logLevel > 1 ) {
+            safe.uboLog(logPrefix, `After edit:\n${safe.JSON_stringify(objAfter, null, 2)}`);
+        }
+        return objAfter;
+    };
+    proxyApplyFn(propChain, function(context) {
+        const i = getArgPos(context.callArgs);
+        if ( i !== undefined ) {
+            const obj = editObj(context.callArgs[i]);
+            if ( obj ) {
+                context.callArgs[i] = obj;
+            }
+        }
+        return context.reflect();
+    });
+}
+registerScriptlet(editInboundObjectFn, {
+    name: 'edit-inbound-object.fn',
+    dependencies: [
+        JSONPath,
+        proxyApplyFn,
+        safeSelf,
+    ],
+});
+
+/******************************************************************************/
+/**
+ * @scriptlet edit-inbound-object.js
+ * 
+ * @description
+ * Prune properties from an object passed as argument to a specific method.
+ * Properties can only be removed.
+ * 
+ * @param propChain
+ * Property chain of the method to trap.
+ * 
+ * @param argPos
+ * 0-based position of the argument. Use negative integer for position relative
+ * to the end.
+ * 
+ * @param jsonq
+ * A uBO-flavored JSONPath query.
+ * 
+ * */
+
+function editInboundObject(propChain = '', argPos = '', jsonq = '') {
+    editInboundObjectFn(false, propChain, argPos, jsonq);
+}
+registerScriptlet(editInboundObject, {
+    name: 'edit-inbound-object.js',
+    dependencies: [
+        editInboundObjectFn,
+    ],
+});
+
+/******************************************************************************/
+/**
+ * @scriptlet trusted-edit-inbound-object.js
+ * 
+ * @description
+ * Edit properties of an object passed as argument to a specific method.
+ * Properties can be assigned new values.
+ * 
+ * @param propChain
+ * Property chain of the method to trap.
+ * 
+ * @param argPos
+ * 0-based position of the argument. Use negative integer for position relative
+ * to the end.
+ * 
+ * @param jsonq
+ * A uBO-flavored JSONPath query.
+ * 
+ * */
+
+function trustedEditInboundObject(propChain = '', argPos = '', jsonq = '') {
+    editInboundObjectFn(true, propChain, argPos, jsonq);
+}
+registerScriptlet(trustedEditInboundObject, {
+    name: 'trusted-edit-inbound-object.js',
+    requiresTrust: true,
+    dependencies: [
+        editInboundObjectFn,
+    ],
+});
+
+/******************************************************************************/
+/******************************************************************************/
+
 function jsonEditXhrResponseFn(trusted, jsonq = '') {
     const safe = safeSelf();
     const logPrefix = safe.makeLogPrefix(
@@ -212,13 +347,17 @@ function jsonEditXhrResponseFn(trusted, jsonq = '') {
             } else if ( typeof innerResponse === 'string' ) {
                 try { obj = safe.JSON_parse(innerResponse); } catch { }
             }
-            if ( typeof obj !== 'object' || obj === null || jsonp.apply(obj) === 0 ) {
+            if ( typeof obj !== 'object' || obj === null ) {
+                return (xhrDetails.response = innerResponse);
+            }
+            const objAfter = jsonp.apply(obj);
+            if ( objAfter === undefined ) {
                 return (xhrDetails.response = innerResponse);
             }
             safe.uboLog(logPrefix, 'Edited');
             const outerResponse = typeof innerResponse === 'string'
-                ? JSONPath.toJSON(obj, safe.JSON_stringify)
-                : obj;
+                ? JSONPath.toJSON(objAfter, safe.JSON_stringify)
+                : objAfter;
             return (xhrDetails.response = outerResponse);
         }
         get responseText() {
@@ -336,9 +475,9 @@ function jsonEditXhrRequestFn(trusted, jsonq = '') {
             try { data = safe.JSON_parse(body); }
             catch { }
             if ( data instanceof Object === false ) { return; }
-            const n = jsonp.apply(data);
-            if ( n === 0 ) { return; }
-            body = safe.JSON_stringify(data);
+            const objAfter = jsonp.apply(data);
+            if ( objAfter === undefined ) { return; }
+            body = safe.JSON_stringify(objAfter);
             safe.uboLog(logPrefix, 'Edited');
             if ( safe.logLevel > 1 ) {
                 safe.uboLog(logPrefix, `After edit:\n${body}`);
@@ -431,18 +570,8 @@ function jsonEditFetchResponseFn(trusted, jsonq = '') {
         const args = context.callArgs;
         const fetchPromise = context.reflect();
         if ( propNeedles.size !== 0 ) {
-            const objs = [ args[0] instanceof Object ? args[0] : { url: args[0] } ];
-            if ( objs[0] instanceof Request ) {
-                try {
-                    objs[0] = safe.Request_clone.call(objs[0]);
-                } catch(ex) {
-                    safe.uboErr(logPrefix, 'Error:', ex);
-                }
-            }
-            if ( args[1] instanceof Object ) {
-                objs.push(args[1]);
-            }
-            const matched = matchObjectPropertiesFn(propNeedles, ...objs);
+            const props = collateFetchArgumentsFn(...args);
+            const matched = matchObjectPropertiesFn(propNeedles, props);
             if ( matched === undefined ) { return fetchPromise; }
             if ( safe.logLevel > 1 ) {
                 safe.uboLog(logPrefix, `Matched "propsToMatch":\n\t${matched.join('\n\t')}`);
@@ -452,9 +581,10 @@ function jsonEditFetchResponseFn(trusted, jsonq = '') {
             const response = responseBefore.clone();
             return response.json().then(obj => {
                 if ( typeof obj !== 'object' ) { return responseBefore; }
-                if ( jsonp.apply(obj) === 0 ) { return responseBefore; }
+                const objAfter = jsonp.apply(obj);
+                if ( objAfter === undefined ) { return responseBefore; }
                 safe.uboLog(logPrefix, 'Edited');
-                const responseAfter = Response.json(obj, {
+                const responseAfter = Response.json(objAfter, {
                     status: responseBefore.status,
                     statusText: responseBefore.statusText,
                     headers: responseBefore.headers,
@@ -479,6 +609,7 @@ function jsonEditFetchResponseFn(trusted, jsonq = '') {
 registerScriptlet(jsonEditFetchResponseFn, {
     name: 'json-edit-fetch-response.fn',
     dependencies: [
+        collateFetchArgumentsFn,
         JSONPath,
         matchObjectPropertiesFn,
         parsePropertiesToMatchFn,
@@ -563,9 +694,9 @@ function jsonEditFetchRequestFn(trusted, jsonq = '') {
         try { data = safe.JSON_parse(body); }
         catch { }
         if ( data instanceof Object === false ) { return; }
-        const n = jsonp.apply(data);
-        if ( n === 0 ) { return; }
-        return safe.JSON_stringify(data);
+        const objAfter = jsonp.apply(data);
+        if ( objAfter === undefined ) { return; }
+        return safe.JSON_stringify(objAfter);
     }
     const proxyHandler = context => {
         const args = context.callArgs;
@@ -577,17 +708,8 @@ function jsonEditFetchRequestFn(trusted, jsonq = '') {
             return context.reflect();
         }
         if ( propNeedles.size !== 0 ) {
-            const objs = [
-                resource instanceof Object ? resource : { url: `${resource}` }
-            ];
-            if ( objs[0] instanceof Request ) {
-                try {
-                    objs[0] = safe.Request_clone.call(objs[0]);
-                } catch(ex) {
-                    safe.uboErr(logPrefix, 'Error:', ex);
-                }
-            }
-            const matched = matchObjectPropertiesFn(propNeedles, ...objs);
+            const props = collateFetchArgumentsFn(resource, options);
+            const matched = matchObjectPropertiesFn(propNeedles, props);
             if ( matched === undefined ) { return context.reflect(); }
             if ( safe.logLevel > 1 ) {
                 safe.uboLog(logPrefix, `Matched "propsToMatch":\n\t${matched.join('\n\t')}`);
@@ -606,6 +728,7 @@ function jsonEditFetchRequestFn(trusted, jsonq = '') {
 registerScriptlet(jsonEditFetchRequestFn, {
     name: 'json-edit-fetch-request.fn',
     dependencies: [
+        collateFetchArgumentsFn,
         JSONPath,
         matchObjectPropertiesFn,
         parsePropertiesToMatchFn,
@@ -682,11 +805,12 @@ function jsonlEditFn(jsonp, text = '') {
             linesAfter.push(lineBefore);
             continue;
         }
-        if ( jsonp.apply(obj) === 0 ) {
+        const objAfter = jsonp.apply(obj);
+        if ( objAfter === undefined ) {
             linesAfter.push(lineBefore);
             continue;
         }
-        const lineAfter = safe.JSON_stringify(obj);
+        const lineAfter = safe.JSON_stringify(objAfter);
         linesAfter.push(lineAfter);
     }
     return linesAfter.join(lineSeparator);
@@ -846,18 +970,8 @@ function jsonlEditFetchResponseFn(trusted, jsonq = '') {
         const args = context.callArgs;
         const fetchPromise = context.reflect();
         if ( propNeedles.size !== 0 ) {
-            const objs = [ args[0] instanceof Object ? args[0] : { url: args[0] } ];
-            if ( objs[0] instanceof Request ) {
-                try {
-                    objs[0] = safe.Request_clone.call(objs[0]);
-                } catch(ex) {
-                    safe.uboErr(logPrefix, 'Error:', ex);
-                }
-            }
-            if ( args[1] instanceof Object ) {
-                objs.push(args[1]);
-            }
-            const matched = matchObjectPropertiesFn(propNeedles, ...objs);
+            const props = collateFetchArgumentsFn(...args);
+            const matched = matchObjectPropertiesFn(propNeedles, props);
             if ( matched === undefined ) { return fetchPromise; }
             if ( safe.logLevel > 1 ) {
                 safe.uboLog(logPrefix, `Matched "propsToMatch":\n\t${matched.join('\n\t')}`);
@@ -899,6 +1013,7 @@ function jsonlEditFetchResponseFn(trusted, jsonq = '') {
 registerScriptlet(jsonlEditFetchResponseFn, {
     name: 'jsonl-edit-fetch-response.fn',
     dependencies: [
+        collateFetchArgumentsFn,
         JSONPath,
         jsonlEditFn,
         matchObjectPropertiesFn,

@@ -19,6 +19,10 @@
     "message": "Configuración",
     "description": "appears as tab name in dashboard"
   },
+  "customFiltersPageName": {
+    "message": "Filtros personalizados",
+    "description": "appears as tab name in dashboard"
+  },
   "developPageName": {
     "message": "Desarrollo",
     "description": "appears as tab name in dashboard. Inspired from 'Develop' menu in Safari, see https://developer.apple.com/documentation/safari-developer-tools/develop-menu"
@@ -35,8 +39,12 @@
     "message": "modo de filtrado",
     "description": "Label in the popup panel for the current filtering mode"
   },
+  "popupLocalToolsLabel": {
+    "message": "En este sitio web",
+    "description": "Label in the popup panel for the local tools section"
+  },
   "popupTipReport": {
-    "message": "Reportar un problema en este sitio web",
+    "message": "Reportar un problema",
     "description": "Tooltip used for the 'chat' icon in the panel"
   },
   "popupTipDashboard": {
@@ -78,6 +86,14 @@
   "3pGroupRegions": {
     "message": "Regiones, idiomas",
     "description": "Header for a ruleset section in 'Filter lists pane'"
+  },
+  "customFiltersImportExportLabel": {
+    "message": "Importar / Exportar",
+    "description": "Text label heading the import/export area of custom filters"
+  },
+  "customFiltersImportTextareaPlaceholder": {
+    "message": "Pega aquí los filtros cosméticos específicos a añadir",
+    "description": "Placeholder text which describes the purpose of the textarea widget"
   },
   "aboutChangelog": {
     "message": "Registro de cambios",
@@ -173,7 +189,7 @@
   },
   "supportReportSpecificButton": {
     "message": "Crear nuevo reporte en GitHub",
-    "description": "Text for button which open an external webpage in Support pane"
+    "description": "Text for button which opens an external web page in Support pane"
   },
   "defaultFilteringModeSectionLabel": {
     "message": "Modo de filtrado predeterminado",
@@ -247,13 +263,25 @@
     "message": "Habilita acceso a características aptas para usuarios técnicos.",
     "description": "Short description for a checkbox in the options page"
   },
+  "settingsBackupRestoreLabel": {
+    "message": "Respaldar",
+    "description": "The header text for the back up/restore section"
+  },
+  "settingsBackupRestoreSummary": {
+    "message": "Haz un respaldo de tu configuración personalizada en un archivo o restaura tu configuración personalizada desde uno.",
+    "description": "A summary description of the back up/restore section."
+  },
+  "settingsBackupRestoreLegend": {
+    "message": "La restauración sobrescribirá toda tu configuración personalizada actual.",
+    "description": "Important information about the back up/restore section."
+  },
   "findListsPlaceholder": {
     "message": "Encontrar listas",
     "description": "Placeholder for the input field used to find lists"
   },
   "strictblockTitle": {
     "message": "Página bloqueada",
-    "description": "Webpage title for the strict-blocked page"
+    "description": "Web page title for the strict-blocked page"
   },
   "strictblockSentence1": {
     "message": "uBO Lite impidió la carga de la página:",
@@ -273,7 +301,7 @@
   },
   "strictblockBack": {
     "message": "Regresar",
-    "description": "A button to go back to the previous webpage"
+    "description": "A button to go back to the previous web page"
   },
   "strictblockClose": {
     "message": "Cerrar esta ventana",
@@ -288,12 +316,20 @@
     "description": "A button to navigate to the blocked page"
   },
   "zapperTipEnter": {
-    "message": "Entrar al modo eliminación de elementos",
+    "message": "Eliminar un elemento",
     "description": "Tooltip for the button used to enter zapper mode"
   },
   "zapperTipQuit": {
     "message": "Salir del modo eliminación de elementos",
     "description": "Tooltip for the button used to exit zapper mode"
+  },
+  "pickerTipEnter": {
+    "message": "Crear un filtro personalizado",
+    "description": "Label for the menu entry to create cosmetic filters"
+  },
+  "unpickerTipEnter": {
+    "message": "Eliminar un filtro personalizado",
+    "description": "Label for the menu entry to delete cosmetic filters"
   },
   "developDropdownLabel": {
     "message": "Ver:",
@@ -327,6 +363,10 @@
     "message": "Revertir",
     "description": "Text for buttons used to revert changes"
   },
+  "addButton": {
+    "message": "Añadir",
+    "description": "Text for buttons used to add content"
+  },
   "importAndAppendButton": {
     "message": "Importar y anexar…",
     "description": "Text for buttons used to import and append content"
@@ -335,6 +375,22 @@
     "message": "Exportar…",
     "description": "Text for buttons used to export content"
   },
+  "backupButton": {
+    "message": "Respaldar…",
+    "description": "Text for buttons used to back up content"
+  },
+  "restoreButton": {
+    "message": "Restaurar…",
+    "description": "Text for buttons used to restore content"
+  },
+  "resetToDefaultButton": {
+    "message": "Restablecer ajustes predeterminados…",
+    "description": "Text for buttons used to reset configurations to default"
+  },
+  "resetToDefaultConfirm": {
+    "message": "Se borrará todas tus configuraciones personalizadas. ¿Seguro que quieres restablecer a la configuración predeterminada?",
+    "description": "Message asking user to confirm reset to default settings"
+  },
   "dnrRulesWarning": {
     "message": "No añadas contenido de fuentes no confiables",
     "description": "Short description of the DNR rules editor pane"
@@ -342,5 +398,25 @@
   "dnrRulesCountInfo": {
     "message": "Número de reglas registradas: {count}",
     "description": "Short sentence to report the number of currently registered DNR rules"
+  },
+  "pickerSliderLabel": {
+    "message": "Mueve el control deslizante para seleccionar la mejor coincidencia",
+    "description": "Label to describe the purpose of the slider"
+  },
+  "pickerPick": {
+    "message": "Elegir",
+    "description": "Text for the button to re-enter element-picking mode"
+  },
+  "pickerPreview": {
+    "message": "Vista previa",
+    "description": "Text for the button to activate preview mode"
+  },
+  "pickerCreate": {
+    "message": "Crear",
+    "description": "Text for the button to create the filter"
+  },
+  "unpickerUsage": {
+    "message": "Selecciona un filtro abajo para resaltar los elementos coincidentes en la página web. Haz clic en la papelera para eliminar un filtro.",
+    "description": "Summary description on how to use the tool to remove custom filters"
   }
 }

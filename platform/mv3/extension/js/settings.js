@@ -19,7 +19,7 @@
     Home: https://github.com/gorhill/uBlock
 */
 
-import { browser, sendMessage } from './ext.js';
+import { browser, i18n, sendMessage } from './ext.js';
 import { dom, qs$ } from './dom.js';
 import { hashFromIterable } from './dashboard.js';
 import { renderFilterLists } from './filter-lists.js';
@@ -132,6 +132,66 @@ dom.on(
 
 /******************************************************************************/
 
+async function backupSettings() {
+    const api = await import('./backup-restore.js');
+    const data = await api.backupToObject(cachedRulesetData);
+    if ( data instanceof Object === false ) { return; }
+    const json = JSON.stringify(data, null, 2)  + '\n';
+    const a = document.createElement('a');
+    a.href = `data:text/plain;charset=utf-8,${encodeURIComponent(json)}`;
+    dom.attr(a, 'download', 'my-ubol-settings.json');
+    dom.attr(a, 'type', 'application/json');
+    a.click();
+}
+
+async function restoreSettings() {
+    const promise = new Promise(resolve => {
+        const input = qs$('section[data-pane="settings"] input[type="file"]');
+        input.onchange = ev => {
+            dom.cl.add(dom.body, 'busy');
+            input.onchange = null;
+            const file = ev.target.files[0];
+            if ( file === undefined || file.name === '' ) { return resolve(); }
+            const fr = new FileReader();
+            fr.onload = ( ) => {
+                fr.onload = null;
+                if ( typeof fr.result !== 'string' ) { return resolve(); }
+                let data;
+                try {
+                    data = JSON.parse(fr.result);
+                } catch {
+                }
+                if ( data instanceof Object === false ) { return resolve(); }
+                import('./backup-restore.js').then(api => {
+                    resolve(api.restoreFromObject(data));
+                });
+            };
+            fr.readAsText(file);
+        };
+        input.oncancel = ( ) => {
+            resolve();
+        };
+        // Reset to empty string, this will ensure a change event is properly
+        // triggered if the user pick a file, even if it's the same as the last
+        // one picked.
+        input.value = '';
+        input.click();
+    });
+    await promise;
+    dom.cl.remove(dom.body, 'busy');
+}
+
+async function resetSettings() {
+    const response = self.confirm(i18n.getMessage('resetToDefaultConfirm'));
+    if ( response !== true ) { return; }
+    dom.cl.add(dom.body, 'busy');
+    const api = await import('./backup-restore.js');
+    await api.restoreFromObject({});
+    dom.cl.remove(dom.body, 'busy');
+}
+
+/******************************************************************************/
+
 dom.on('#autoReload input[type="checkbox"]', 'change', ev => {
     sendMessage({
         what: 'setAutoReload',
@@ -157,6 +217,18 @@ dom.on('#developerMode input[type="checkbox"]', 'change', ev => {
     const state = ev.target.checked;
     sendMessage({ what: 'setDeveloperMode', state });
     dom.body.dataset.develop = `${state}`;
+});
+
+dom.on('section[data-pane="settings"] [data-i18n="backupButton"]', 'click', ( ) => {
+    backupSettings();
+});
+
+dom.on('section[data-pane="settings"] [data-i18n="restoreButton"]', 'click', ( ) => {
+    restoreSettings();
+});
+
+dom.on('section[data-pane="settings"] [data-i18n="resetToDefaultButton"]', 'click', ( ) => {
+    resetSettings();
 });
 
 /******************************************************************************/
@@ -222,10 +294,8 @@ listen.onmessage = ev => {
     }
 
     if ( message.enabledRulesets !== undefined ) {
-        if ( hashFromIterable(message.enabledRulesets) !== hashFromIterable(local.enabledRulesets) ) {
-            local.enabledRulesets = message.enabledRulesets;
-            render = true;
-        }
+        local.enabledRulesets = message.enabledRulesets;
+        render = true;
     }
 
     if ( render === false ) { return; }
@@ -244,13 +314,14 @@ sendMessage({
         renderAdminRules();
         renderFilterLists(cachedRulesetData);
         renderWidgets();
-        dom.cl.remove(dom.body, 'loading');
     } catch(reason) {
         console.error(reason);
+    } finally {
+        dom.cl.remove(dom.body, 'loading');
     }
     listen();
 }).catch(reason => {
-    console.trace(reason);
+    console.error(reason);
 });
 
 /******************************************************************************/

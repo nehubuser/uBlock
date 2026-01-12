@@ -19,6 +19,10 @@
     "message": "Inställningar",
     "description": "appears as tab name in dashboard"
   },
+  "customFiltersPageName": {
+    "message": "Anpassade filter",
+    "description": "appears as tab name in dashboard"
+  },
   "developPageName": {
     "message": "Utveckla",
     "description": "appears as tab name in dashboard. Inspired from 'Develop' menu in Safari, see https://developer.apple.com/documentation/safari-developer-tools/develop-menu"
@@ -35,8 +39,12 @@
     "message": "filtreringsläge",
     "description": "Label in the popup panel for the current filtering mode"
   },
+  "popupLocalToolsLabel": {
+    "message": "På denna webbplats",
+    "description": "Label in the popup panel for the local tools section"
+  },
   "popupTipReport": {
-    "message": "Rapportera ett problem på denna webbplats",
+    "message": "Rapportera ett problem",
     "description": "Tooltip used for the 'chat' icon in the panel"
   },
   "popupTipDashboard": {
@@ -78,6 +86,14 @@
   "3pGroupRegions": {
     "message": "Regioner, språk",
     "description": "Header for a ruleset section in 'Filter lists pane'"
+  },
+  "customFiltersImportExportLabel": {
+    "message": "Importera / Exportera",
+    "description": "Text label heading the import/export area of custom filters"
+  },
+  "customFiltersImportTextareaPlaceholder": {
+    "message": "Här klistrar du in specifika kosmetiska filter att lägga till",
+    "description": "Placeholder text which describes the purpose of the textarea widget"
   },
   "aboutChangelog": {
     "message": "Ändringslogg",
@@ -173,7 +189,7 @@
   },
   "supportReportSpecificButton": {
     "message": "Skapa ny rapport på GitHub",
-    "description": "Text for button which open an external webpage in Support pane"
+    "description": "Text for button which opens an external web page in Support pane"
   },
   "defaultFilteringModeSectionLabel": {
     "message": "Standardfiltreringsläge",
@@ -247,13 +263,25 @@
     "message": "Aktivera åtkomst till funktioner som är lämpliga för tekniska användare.",
     "description": "Short description for a checkbox in the options page"
   },
+  "settingsBackupRestoreLabel": {
+    "message": "Säkerhetskopiering",
+    "description": "The header text for the back up/restore section"
+  },
+  "settingsBackupRestoreSummary": {
+    "message": "Säkerhetskopiera dina anpassade inställningar till en fil, eller återställ dina anpassade inställningar från en fil.",
+    "description": "A summary description of the back up/restore section."
+  },
+  "settingsBackupRestoreLegend": {
+    "message": "Återställningen kommer att skriva över alla dina nuvarande anpassade inställningar.",
+    "description": "Important information about the back up/restore section."
+  },
   "findListsPlaceholder": {
     "message": "Hitta listor",
     "description": "Placeholder for the input field used to find lists"
   },
   "strictblockTitle": {
     "message": "Sidan blockerad",
-    "description": "Webpage title for the strict-blocked page"
+    "description": "Web page title for the strict-blocked page"
   },
   "strictblockSentence1": {
     "message": "uBO Lite har förhindrat följande sida från att läsas in:",
@@ -273,7 +301,7 @@
   },
   "strictblockBack": {
     "message": "Gå tillbaka",
-    "description": "A button to go back to the previous webpage"
+    "description": "A button to go back to the previous web page"
   },
   "strictblockClose": {
     "message": "Stäng det här fönstret",
@@ -288,12 +316,20 @@
     "description": "A button to navigate to the blocked page"
   },
   "zapperTipEnter": {
-    "message": "Gå in i elementzapperläge",
+    "message": "Ta bort ett element",
     "description": "Tooltip for the button used to enter zapper mode"
   },
   "zapperTipQuit": {
     "message": "Lämna elementzapperläge",
     "description": "Tooltip for the button used to exit zapper mode"
+  },
+  "pickerTipEnter": {
+    "message": "Skapa ett anpassat filter",
+    "description": "Label for the menu entry to create cosmetic filters"
+  },
+  "unpickerTipEnter": {
+    "message": "Ta bort ett anpassat filter",
+    "description": "Label for the menu entry to delete cosmetic filters"
   },
   "developDropdownLabel": {
     "message": "Visa:",
@@ -327,6 +363,10 @@
     "message": "Ångra",
     "description": "Text for buttons used to revert changes"
   },
+  "addButton": {
+    "message": "Lägg till",
+    "description": "Text for buttons used to add content"
+  },
   "importAndAppendButton": {
     "message": "Importera och lägg till…",
     "description": "Text for buttons used to import and append content"
@@ -335,6 +375,22 @@
     "message": "Exportera…",
     "description": "Text for buttons used to export content"
   },
+  "backupButton": {
+    "message": "Säkerhetskopiera…",
+    "description": "Text for buttons used to back up content"
+  },
+  "restoreButton": {
+    "message": "Återställ…",
+    "description": "Text for buttons used to restore content"
+  },
+  "resetToDefaultButton": {
+    "message": "Återställ till standardinställningarna…",
+    "description": "Text for buttons used to reset configurations to default"
+  },
+  "resetToDefaultConfirm": {
+    "message": "Alla dina anpassade inställningar kommer att tas bort. Vill du verkligen återställa till standardinställningarna?",
+    "description": "Message asking user to confirm reset to default settings"
+  },
   "dnrRulesWarning": {
     "message": "Lägg inte till filter från obetrodda källor.",
     "description": "Short description of the DNR rules editor pane"
@@ -342,5 +398,25 @@
   "dnrRulesCountInfo": {
     "message": "Antal registrerade regler: {count}",
     "description": "Short sentence to report the number of currently registered DNR rules"
+  },
+  "pickerSliderLabel": {
+    "message": "Flytta reglaget för att välja den bästa matchningen",
+    "description": "Label to describe the purpose of the slider"
+  },
+  "pickerPick": {
+    "message": "Välj",
+    "description": "Text for the button to re-enter element-picking mode"
+  },
+  "pickerPreview": {
+    "message": "Förhandsgranska",
+    "description": "Text for the button to activate preview mode"
+  },
+  "pickerCreate": {
+    "message": "Skapa",
+    "description": "Text for the button to create the filter"
+  },
+  "unpickerUsage": {
+    "message": "Välj ett filter nedan för att markera matchande element på webbsidan. Klicka på papperskorgen för att ta bort ett filter.",
+    "description": "Summary description on how to use the tool to remove custom filters"
   }
 }

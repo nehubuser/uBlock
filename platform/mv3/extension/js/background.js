@@ -19,17 +19,33 @@
     Home: https://github.com/gorhill/uBlock
 */
 
+import * as scrmgr from './scripting-manager.js';
+
 import {
     MODE_BASIC,
     MODE_OPTIMAL,
+    defaultFilteringModes,
     getDefaultFilteringMode,
     getFilteringMode,
     getFilteringModeDetails,
+    persistHostPermissions,
     setDefaultFilteringMode,
     setFilteringMode,
     setFilteringModeDetails,
     syncWithBrowserPermissions,
 } from './mode-manager.js';
+
+import {
+    addCustomFilters,
+    customFiltersFromHostname,
+    getAllCustomFilters,
+    hasCustomFilters,
+    injectCustomFilters,
+    removeAllCustomFilters,
+    removeCustomFilters,
+    startCustomFilters,
+    terminateCustomFilters,
+} from './filter-manager.js';
 
 import {
     adminReadEx,
@@ -41,6 +57,7 @@ import {
     broadcastMessage,
     gotoURL,
     hasBroadHostPermissions,
+    hostnameFromMatch,
     hostnamesFromMatches,
 } from './utils.js';
 
@@ -48,15 +65,25 @@ import {
     browser,
     localRead, localRemove, localWrite,
     runtime,
+    sessionAccessLevel,
+    webextFlavor,
 } from './ext.js';
+
+import {
+    defaultConfig,
+    loadRulesetConfig,
+    process,
+    rulesetConfig,
+    saveRulesetConfig,
+} from './config.js';
 
 import {
     enableRulesets,
     excludeFromStrictBlock,
+    getDefaultRulesetsFromEnv,
     getEffectiveDynamicRules,
     getEffectiveSessionRules,
     getEffectiveUserRules,
-    getEnabledRulesetsDetails,
     getRulesetDetails,
     patchDefaultRulesets,
     setStrictBlockMode,
@@ -66,28 +93,22 @@ import {
 } from './ruleset-manager.js';
 
 import {
+    getConsoleOutput,
     getMatchedRules,
     isSideloaded,
     toggleDeveloperMode,
+    ubolErr,
     ubolLog,
 } from './debug.js';
 
-import {
-    loadRulesetConfig,
-    process,
-    rulesetConfig,
-    saveRulesetConfig,
-} from './config.js';
-
 import { dnr } from './ext-compat.js';
-import { registerInjectables } from './scripting-manager.js';
 import { toggleToolbarIcon } from './action.js';
 
 /******************************************************************************/
 
 const UBOL_ORIGIN = runtime.getURL('').replace(/\/$/, '').toLowerCase();
-
 const canShowBlockedCount = typeof dnr.setExtensionActionOptions === 'function';
+const { registerInjectables } = scrmgr;
 
 let pendingPermissionRequest;
 
@@ -99,6 +120,70 @@ function getCurrentVersion() {
 
 /******************************************************************************/
 
+async function reloadTab(tabId, url = '') {
+    return new Promise(resolve => {
+        self.setTimeout(( ) => {
+            if ( url !== '' ) {
+                browser.tabs.update(tabId, { url });
+            } else {
+                browser.tabs.reload(tabId);
+            }
+            resolve();
+        }, 437);
+    });
+}
+
+// When a new host permission is granted through the popup panel
+async function onPermissionGrantedThruExtension(details, origins) {
+    await persistHostPermissions();
+    const defaultMode = await getDefaultFilteringMode();
+    if ( defaultMode >= MODE_OPTIMAL ) { return; }
+    if ( Array.isArray(origins) === false ) { return; }
+    const hostnames = hostnamesFromMatches(origins);
+    if ( hostnames.includes(details.hostname) === false ) { return; }
+    const beforeLevel = await getFilteringMode(details.hostname);
+    if ( beforeLevel === details.afterLevel ) { return; }
+    const afterLevel = await setFilteringMode(details.hostname, details.afterLevel);
+    if ( afterLevel !== details.afterLevel ) { return; }
+    await registerInjectables();
+    if ( rulesetConfig.autoReload !== true ) { return; }
+    await reloadTab(details.tabId, details.url);
+}
+
+// When a new host permission is granted through the browser
+async function onPermissionGrantedThruBrowser(origins) {
+    const modified = await syncWithBrowserPermissions();
+    if ( modified === false ) { return; }
+    await registerInjectables();
+    if ( rulesetConfig.autoReload !== true ) { return; }
+    if ( origins.length !== 1 ) { return; }
+    const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+    const tabId = tabs?.[0]?.id;
+    if ( typeof tabId !== 'number' || tabId === -1 ) { return; }
+    const results = await browser.scripting.executeScript({
+        target: { tabId, frameIds: [ 0 ] },
+        func: ( ) => document.location.hostname,
+    }).catch(( ) => {
+    });
+    const tabHostname = results?.[0]?.result;
+    if ( typeof tabHostname !== 'string' ) { return; }
+    const hostname = hostnameFromMatch(origins[0]);
+    if ( tabHostname.endsWith(hostname) === false ) { return; }
+    const pos = tabHostname.length - hostname.length;
+    if ( pos !== 0 && tabHostname.charAt(pos-1) !== '.' ) { return; }
+    await reloadTab(tabId);
+}
+
+// https://github.com/uBlockOrigin/uBOL-home/issues/280
+async function onPermissionsAdded(permissions) {
+    const details = pendingPermissionRequest;
+    pendingPermissionRequest = undefined;
+    const { origins = [] } = permissions;
+    return details !== undefined
+        ? onPermissionGrantedThruExtension(details, origins)
+        : onPermissionGrantedThruBrowser(origins);
+}
+
 async function onPermissionsRemoved() {
     const modified = await syncWithBrowserPermissions();
     if ( modified === false ) { return false; }
@@ -106,36 +191,16 @@ async function onPermissionsRemoved() {
     return true;
 }
 
-// https://github.com/uBlockOrigin/uBOL-home/issues/280
-async function onPermissionsAdded(permissions) {
-    const details = pendingPermissionRequest;
-    pendingPermissionRequest = undefined;
-    if ( details === undefined ) {
-        const modified = await syncWithBrowserPermissions();
-        if ( modified === false ) { return; }
-        return Promise.all([
-            updateSessionRules(),
-            registerInjectables(),
-        ]);
-    }
-    const defaultMode = await getDefaultFilteringMode();
-    if ( defaultMode >= MODE_OPTIMAL ) { return; }
-    if ( Array.isArray(permissions.origins) === false ) { return; }
-    const hostnames = hostnamesFromMatches(permissions.origins);
-    if ( hostnames.includes(details.hostname) === false ) { return; }
-    const beforeLevel = await getFilteringMode(details.hostname);
-    if ( beforeLevel === details.afterLevel ) { return; }
-    const afterLevel = await setFilteringMode(details.hostname, details.afterLevel);
-    if ( afterLevel !== details.afterLevel ) { return; }
-    await registerInjectables();
-    if ( rulesetConfig.autoReload ) {
-        self.setTimeout(( ) => {
-            browser.tabs.update(details.tabId, {
-                url: details.url,
-            });
-        }, 437);
-    }
+async function onPermissionsChanged(op, permissions) {
+    await isFullyInitialized;
+    const { pending } = onPermissionsChanged;
+    await Promise.all(pending);
+    const promise = op === 'removed'
+        ? onPermissionsRemoved()
+        : onPermissionsAdded(permissions);
+    pending.push(promise);
 }
+onPermissionsChanged.pending = [];
 
 /******************************************************************************/
 
@@ -153,45 +218,78 @@ function setDeveloperMode(state) {
 
 function onMessage(request, sender, callback) {
 
+    const tabId = sender?.tab?.id ?? false;
+    const frameId = tabId && (sender?.frameId ?? false);
+
     // Does not require trusted origin.
 
     switch ( request.what ) {
 
-    case 'insertCSS': {
-        const tabId = sender?.tab?.id ?? false;
-        const frameId = sender?.frameId ?? false;
-        if ( tabId === false || frameId === false ) { return; }
+    case 'insertCSS':
+        if ( frameId === false ) { return false; }
+        // https://bugs.webkit.org/show_bug.cgi?id=262491
+        if ( frameId !== 0 && webextFlavor === 'safari' ) { return false; }
         browser.scripting.insertCSS({
             css: request.css,
             origin: 'USER',
             target: { tabId, frameIds: [ frameId ] },
         }).catch(reason => {
-            console.log(reason);
+            ubolErr(`insertCSS/${reason}`);
         });
         return false;
-    }
 
-    case 'removeCSS': {
-        const tabId = sender?.tab?.id ?? false;
-        const frameId = sender?.frameId ?? false;
-        if ( tabId === false || frameId === false ) { return; }
+    case 'removeCSS':
+        if ( frameId === false ) { return false; }
+        // https://bugs.webkit.org/show_bug.cgi?id=262491
+        if ( frameId !== 0 && webextFlavor === 'safari' ) { return false; }
         browser.scripting.removeCSS({
             css: request.css,
             origin: 'USER',
             target: { tabId, frameIds: [ frameId ] },
         }).catch(reason => {
-            console.log(reason);
+            ubolErr(`removeCSS/${reason}`);
         });
         return false;
-    }
 
     case 'toggleToolbarIcon': {
-        const tabId = sender?.tab?.id ?? false;
         if ( tabId ) {
             toggleToolbarIcon(tabId);
         }
         return false;
     }
+
+    case 'startCustomFilters':
+        if ( frameId === false ) { return false; }
+        startCustomFilters(tabId, frameId).then(( ) => {
+            callback();
+        });
+        return true;
+
+    case 'terminateCustomFilters':
+        if ( frameId === false ) { return false; }
+        terminateCustomFilters(tabId, frameId).then(( ) => {
+            callback();
+        });
+        return true;
+
+    case 'injectCustomFilters':
+        if ( frameId === false ) { return false; }
+        injectCustomFilters(tabId, frameId, request.hostname).then(selectors => {
+            callback(selectors);
+        });
+        return true;
+
+    case 'injectCSSProceduralAPI':
+        browser.scripting.executeScript({
+            files: [ '/js/scripting/css-procedural-api.js' ],
+            target: { tabId, frameIds: [ frameId ] },
+            injectImmediately: true,
+        }).catch(reason => {
+            ubolErr(`executeScript/${reason}`);
+        }).then(( ) => {
+            callback();
+        });
+        return true;
 
     default:
         break;
@@ -208,18 +306,35 @@ function onMessage(request, sender, callback) {
     switch ( request.what ) {
 
     case 'applyRulesets': {
-        enableRulesets(request.enabledRulesets).then(( ) => {
-            rulesetConfig.enabledRulesets = request.enabledRulesets;
-            return saveRulesetConfig();
-        }).then(( ) => {
-            registerInjectables();
-            callback();
-            return dnr.getEnabledRulesets();
-        }).then(enabledRulesets => {
-            broadcastMessage({ enabledRulesets });
+        enableRulesets(request.enabledRulesets).then(result => {
+            if ( result === undefined || result.error ) {
+                callback(result);
+                return;
+            }
+            rulesetConfig.enabledRulesets = result.enabledRulesets;
+            return saveRulesetConfig().then(( ) => {
+                return registerInjectables();
+            }).then(( ) => {
+                callback(result);
+            });
+        }).finally(( ) => {
+            broadcastMessage({ enabledRulesets: rulesetConfig.enabledRulesets });
         });
         return true;
     }
+
+    case 'getDefaultConfig':
+        getDefaultRulesetsFromEnv().then(rulesets => {
+            callback({
+                autoReload: defaultConfig.autoReload,
+                developerMode: defaultConfig.developerMode,
+                showBlockedCount: defaultConfig.showBlockedCount,
+                strictBlockMode: defaultConfig.strictBlockMode,
+                rulesets,
+                filteringModes: Object.assign(defaultFilteringModes),
+            });
+        });
+        return true;
 
     case 'getOptionsPageData':
         Promise.all([
@@ -258,9 +373,21 @@ function onMessage(request, sender, callback) {
         });
         return true;
 
+    case 'getEnabledRulesets':
+        dnr.getEnabledRulesets().then(rulesets => {
+            callback(rulesets);
+        });
+        return true;
+
     case 'getRulesetDetails':
         getRulesetDetails().then(rulesetDetails => {
             callback(Array.from(rulesetDetails.values()));
+        });
+        return true;
+
+    case 'hasBroadHostPermissions':
+        hasBroadHostPermissions().then(result => {
+            callback(result);
         });
         return true;
 
@@ -302,23 +429,17 @@ function onMessage(request, sender, callback) {
         Promise.all([
             hasBroadHostPermissions(),
             getFilteringMode(request.hostname),
-            getEnabledRulesetsDetails(),
             adminReadEx('disabledFeatures'),
+            hasCustomFilters(request.hostname),
         ]).then(results => {
-            const [
-                hasOmnipotence,
-                level,
-                rulesetDetails,
-                disabledFeatures,
-            ] = results;
             callback({
-                hasOmnipotence,
-                level,
+                hasOmnipotence: results[0],
+                level: results[1],
                 autoReload: rulesetConfig.autoReload,
-                rulesetDetails,
                 isSideloaded,
                 developerMode: rulesetConfig.developerMode,
-                disabledFeatures,
+                disabledFeatures: results[2],
+                hasCustomFilters: results[3],
             });
         });
         return true;
@@ -432,6 +553,49 @@ function onMessage(request, sender, callback) {
         });
         return true;
 
+    case 'addCustomFilters':
+        addCustomFilters(request.hostname, request.selectors).then(modified => {
+            if ( modified !== true ) { return; }
+            return registerInjectables();
+        }).then(( ) => {
+            callback();
+        })
+        return true;
+
+    case 'removeCustomFilters':
+        removeCustomFilters(request.hostname, request.selectors).then(modified => {
+            if ( modified !== true ) { return; }
+            return registerInjectables();
+        }).then(( ) => {
+            callback();
+        });
+        return true;
+
+    case 'removeAllCustomFilters':
+        removeAllCustomFilters(request.hostname).then(modified => {
+            if ( modified !== true ) { return; }
+            return registerInjectables();
+        }).then(( ) => {
+            callback();
+        });
+        return true;
+
+    case 'customFiltersFromHostname':
+        customFiltersFromHostname(request.hostname).then(selectors => {
+            callback(selectors);
+        });
+        return true;
+
+    case 'getAllCustomFilters':
+        getAllCustomFilters().then(data => {
+            callback(data);
+        });
+        return true;
+
+    case 'getConsoleOutput':
+        callback(getConsoleOutput());
+        break;
+
     default:
         break;
     }
@@ -446,7 +610,19 @@ function onCommand(command, tab) {
     case 'enter-zapper-mode': {
         if ( browser.scripting === undefined ) { return; }
         browser.scripting.executeScript({
-            files: [ '/js/scripting/zapper.js' ],
+            files: [ '/js/scripting/tool-overlay.js', '/js/scripting/zapper.js' ],
+            target: { tabId: tab.id },
+        });
+        break;
+    }
+    case 'enter-picker-mode': {
+        if ( browser.scripting === undefined ) { return; }
+        browser.scripting.executeScript({
+            files: [
+                '/js/scripting/css-procedural-api.js',
+                '/js/scripting/tool-overlay.js',
+                '/js/scripting/picker.js',
+            ],
             target: { tabId: tab.id },
         });
         break;
@@ -477,7 +653,7 @@ async function startSession() {
     const rulesetsUpdated = await enableRulesets(rulesetConfig.enabledRulesets);
 
     // We need to update the regex rules only when ruleset version changes.
-    if ( rulesetsUpdated === false ) {
+    if ( rulesetsUpdated === undefined ) {
         if ( isNewVersion ) {
             updateDynamicRules();
         } else {
@@ -492,6 +668,10 @@ async function startSession() {
     // after we quit the browser. For now uBOL will check unconditionally at
     // launch time whether content css/scripts are properly registered.
     registerInjectables();
+
+    // Cosmetic filtering-related content scripts cache fitlering data in
+    // session storage.
+    sessionAccessLevel({ accessLevel: 'TRUSTED_AND_UNTRUSTED_CONTEXTS' });
 
     // https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/declarativeNetRequest
     //   Firefox API does not support `dnr.setExtensionActionOptions`
@@ -532,6 +712,8 @@ async function start() {
 
     if ( process.wakeupRun === false ) {
         await startSession();
+    } else {
+        scrmgr.onWakeupRun();
     }
 
     toggleDeveloperMode(rulesetConfig.developerMode);
@@ -546,7 +728,7 @@ const isFullyInitialized = start().then(( ) => {
     localRemove('goodStart');
     return false;
 }).catch(reason => {
-    console.trace(reason);
+    ubolErr(reason);
     if ( process.wakeupRun ) { return; }
     return localRead('goodStart').then(goodStart => {
         if ( goodStart === false ) {
@@ -570,13 +752,13 @@ runtime.onMessage.addListener((request, sender, callback) => {
 
 browser.permissions.onRemoved.addListener((...args) => {
     isFullyInitialized.then(( ) => {
-        onPermissionsRemoved(...args);
+        onPermissionsChanged('removed', ...args);
     });
 });
 
 browser.permissions.onAdded.addListener((...args) => {
     isFullyInitialized.then(( ) => {
-        onPermissionsAdded(...args);
+        onPermissionsChanged('added', ...args);
     });
 });
 

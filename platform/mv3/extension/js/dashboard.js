@@ -19,16 +19,18 @@
     Home: https://github.com/gorhill/uBlock
 */
 
+import { dom, qs$ } from './dom.js';
 import {
-    localRead,
-    localRemove,
-    localWrite,
+    localRead, localRemove, localWrite,
+    runtime,
+    webextFlavor,
 } from './ext.js';
-
-import { dom } from './dom.js';
-import { runtime } from './ext.js';
+import { faIconsInit } from './fa-icons.js';
+import { i18n } from './i18n.js';
 
 /******************************************************************************/
+
+dom.body.dataset.platform = webextFlavor;
 
 {
     const manifest = runtime.getManifest();
@@ -52,9 +54,34 @@ localRead('dashboard.activePane').then(pane => {
     dom.body.dataset.pane = pane;
 });
 
+// Update troubleshooting on-demand
+const tsinfoObserver = new IntersectionObserver(entries => {
+    if ( entries.every(a => a.isIntersecting === false) ) { return; }
+    import('./troubleshooting.js').then(module => {
+        return module.getTroubleshootingInfo();
+    }).then(config => {
+        qs$('[data-i18n="supportS5H"] + pre').textContent = config;
+    });
+});
+tsinfoObserver.observe(qs$('[data-i18n="supportS5H"] + pre'));
+
+/******************************************************************************/
+
+export function nodeFromTemplate(templateId, nodeSelector) {
+    const template = qs$(`template#${templateId}`);
+    const fragment = template.content.cloneNode(true);
+    const node = nodeSelector !== undefined
+        ? qs$(fragment, nodeSelector)
+        : fragment.firstElementChild;
+    faIconsInit(node);
+    i18n.render(node);
+    return node;
+}
+
 /******************************************************************************/
 
 export function hashFromIterable(iter) {
+    if ( Boolean(iter) === false ) { return ''; }
     return Array.from(iter).sort().join('\n');
 }
 

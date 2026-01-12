@@ -19,6 +19,10 @@
     "message": "Configuració",
     "description": "appears as tab name in dashboard"
   },
+  "customFiltersPageName": {
+    "message": "Filtres personalitzats",
+    "description": "appears as tab name in dashboard"
+  },
   "developPageName": {
     "message": "Desenvolupament",
     "description": "appears as tab name in dashboard. Inspired from 'Develop' menu in Safari, see https://developer.apple.com/documentation/safari-developer-tools/develop-menu"
@@ -34,6 +38,10 @@
   "popupFilteringModeLabel": {
     "message": "mode de filtre",
     "description": "Label in the popup panel for the current filtering mode"
+  },
+  "popupLocalToolsLabel": {
+    "message": "En aquest lloc web",
+    "description": "Label in the popup panel for the local tools section"
   },
   "popupTipReport": {
     "message": "Informa d'un problema en aquest lloc web",
@@ -78,6 +86,14 @@
   "3pGroupRegions": {
     "message": "Regions, llengües",
     "description": "Header for a ruleset section in 'Filter lists pane'"
+  },
+  "customFiltersImportExportLabel": {
+    "message": "Importa/Exporta",
+    "description": "Text label heading the import/export area of custom filters"
+  },
+  "customFiltersImportTextareaPlaceholder": {
+    "message": "Enganxeu aquí els filtres cosmètics que voleu afegir",
+    "description": "Placeholder text which describes the purpose of the textarea widget"
   },
   "aboutChangelog": {
     "message": "Registre de canvis",
@@ -173,7 +189,7 @@
   },
   "supportReportSpecificButton": {
     "message": "Crea un informe nou",
-    "description": "Text for button which open an external webpage in Support pane"
+    "description": "Text for button which opens an external web page in Support pane"
   },
   "defaultFilteringModeSectionLabel": {
     "message": "Mode de filtratge per defecte",
@@ -247,13 +263,25 @@
     "message": "Habilita l'accés a funcions adequades per a usuaris tècnics.",
     "description": "Short description for a checkbox in the options page"
   },
+  "settingsBackupRestoreLabel": {
+    "message": "Còpia de seguretat / Restaura",
+    "description": "The header text for the back up/restore section"
+  },
+  "settingsBackupRestoreSummary": {
+    "message": "Feu una còpia de seguretat de la vostra configuració personalitzada a un fitxer o restaureu la vostra configuració personalitzada des d'un fitxer.",
+    "description": "A summary description of the back up/restore section."
+  },
+  "settingsBackupRestoreLegend": {
+    "message": "La restauració sobreescriurà tots els paràmetres personalitzats actuals.",
+    "description": "Important information about the back up/restore section."
+  },
   "findListsPlaceholder": {
     "message": "Cerca llistes",
     "description": "Placeholder for the input field used to find lists"
   },
   "strictblockTitle": {
     "message": "Pàgina blocada",
-    "description": "Webpage title for the strict-blocked page"
+    "description": "Web page title for the strict-blocked page"
   },
   "strictblockSentence1": {
     "message": "L'uBO Lite ha evitat la càrrega d'aquesta pàgina:",
@@ -273,7 +301,7 @@
   },
   "strictblockBack": {
     "message": "Enrere",
-    "description": "A button to go back to the previous webpage"
+    "description": "A button to go back to the previous web page"
   },
   "strictblockClose": {
     "message": "Tanca aquesta finestra",
@@ -294,6 +322,14 @@
   "zapperTipQuit": {
     "message": "Surt del mode d'eliminació d'elements",
     "description": "Tooltip for the button used to exit zapper mode"
+  },
+  "pickerTipEnter": {
+    "message": "Crea un filtre personalitzat",
+    "description": "Label for the menu entry to create cosmetic filters"
+  },
+  "unpickerTipEnter": {
+    "message": "Elimina un filtre personalitzat",
+    "description": "Label for the menu entry to delete cosmetic filters"
   },
   "developDropdownLabel": {
     "message": "Vista:",
@@ -327,6 +363,10 @@
     "message": "Restaura",
     "description": "Text for buttons used to revert changes"
   },
+  "addButton": {
+    "message": "Afegeix",
+    "description": "Text for buttons used to add content"
+  },
   "importAndAppendButton": {
     "message": "Importa i annexa…",
     "description": "Text for buttons used to import and append content"
@@ -335,6 +375,22 @@
     "message": "Exporta…",
     "description": "Text for buttons used to export content"
   },
+  "backupButton": {
+    "message": "Còpia de seguretat…",
+    "description": "Text for buttons used to back up content"
+  },
+  "restoreButton": {
+    "message": "Restaura…",
+    "description": "Text for buttons used to restore content"
+  },
+  "resetToDefaultButton": {
+    "message": "Restaura a la configuració per defecte…",
+    "description": "Text for buttons used to reset configurations to default"
+  },
+  "resetToDefaultConfirm": {
+    "message": "S'eliminaran tots els paràmetres personalitzats. Voleu restablir els paràmetres per defecte?",
+    "description": "Message asking user to confirm reset to default settings"
+  },
   "dnrRulesWarning": {
     "message": "No afegiu contingut de fonts no fiables",
     "description": "Short description of the DNR rules editor pane"
@@ -342,5 +398,25 @@
   "dnrRulesCountInfo": {
     "message": "Nombre de regles registrades: {count}",
     "description": "Short sentence to report the number of currently registered DNR rules"
+  },
+  "pickerSliderLabel": {
+    "message": "Moveu el control lliscant per a seleccionar la millor coincidència",
+    "description": "Label to describe the purpose of the slider"
+  },
+  "pickerPick": {
+    "message": "Selecciona",
+    "description": "Text for the button to re-enter element-picking mode"
+  },
+  "pickerPreview": {
+    "message": "Previsualitza",
+    "description": "Text for the button to activate preview mode"
+  },
+  "pickerCreate": {
+    "message": "Crea",
+    "description": "Text for the button to create the filter"
+  },
+  "unpickerUsage": {
+    "message": "Seleccioneu un filtre a continuació per a ressaltar els elements coincidents de la pàgina web. Feu clic a la paperera per a eliminar un filtre.",
+    "description": "Summary description on how to use the tool to remove custom filters"
   }
 }

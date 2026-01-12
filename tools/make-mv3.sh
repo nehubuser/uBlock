@@ -26,7 +26,7 @@ for i in "$@"; do
     safari)
       PLATFORM="safari"
       ;;
-    uBOLite_+([0-9]).+([0-9]).+([0-9]))
+    +([0-9]).+([0-9]).+([0-9]))
       TAGNAME="$i"
       FULL="yes"
       ;;
@@ -74,15 +74,19 @@ else
 fi
 
 echo "*** uBOLite.mv3: Copying common files"
-cp -R "$UBO_DIR"/src/css/fonts/* "$UBOL_DIR"/css/fonts/
+cp -R "$UBO_DIR"/src/css/fonts/Inter "$UBOL_DIR"/css/fonts/
 cp "$UBO_DIR"/src/css/themes/default.css "$UBOL_DIR"/css/
 cp "$UBO_DIR"/src/css/common.css "$UBOL_DIR"/css/
 cp "$UBO_DIR"/src/css/dashboard-common.css "$UBOL_DIR"/css/
 cp "$UBO_DIR"/src/css/fa-icons.css "$UBOL_DIR"/css/
 
+cp "$UBO_DIR"/src/js/arglist-parser.js "$UBOL_DIR"/js/
 cp "$UBO_DIR"/src/js/dom.js "$UBOL_DIR"/js/
 cp "$UBO_DIR"/src/js/fa-icons.js "$UBOL_DIR"/js/
 cp "$UBO_DIR"/src/js/i18n.js "$UBOL_DIR"/js/
+cp "$UBO_DIR"/src/js/jsonpath.js "$UBOL_DIR"/js/
+cp "$UBO_DIR"/src/js/redirect-resources.js "$UBOL_DIR"/js/
+cp "$UBO_DIR"/src/js/static-filtering-parser.js "$UBOL_DIR"/js/
 cp "$UBO_DIR"/src/js/urlskip.js "$UBOL_DIR"/js/
 cp "$UBO_DIR"/src/lib/punycode.js "$UBOL_DIR"/js/
 
@@ -97,7 +101,10 @@ cp platform/mv3/extension/*.json "$UBOL_DIR"/
 cp platform/mv3/extension/css/* "$UBOL_DIR"/css/
 cp -R platform/mv3/extension/js/* "$UBOL_DIR"/js/
 cp platform/mv3/"$PLATFORM"/ext-compat.js "$UBOL_DIR"/js/ 2>/dev/null || :
+cp platform/mv3/"$PLATFORM"/css-api.js "$UBOL_DIR"/js/scripting/ 2>/dev/null || :
+cp platform/mv3/"$PLATFORM"/css-user.js "$UBOL_DIR"/js/scripting/ 2>/dev/null || :
 cp platform/mv3/extension/img/* "$UBOL_DIR"/img/
+cp platform/mv3/"$PLATFORM"/img/* "$UBOL_DIR"/img/ 2>/dev/null || :
 cp -R platform/mv3/extension/_locales "$UBOL_DIR"/
 cp platform/mv3/README.md "$UBOL_DIR/"
 
@@ -111,6 +118,8 @@ cp platform/mv3/extension/lib/codemirror/codemirror.LICENSE \
     "$UBOL_DIR"/lib/codemirror/
 cp platform/mv3/extension/lib/codemirror/codemirror-ubol/LICENSE \
     "$UBOL_DIR"/lib/codemirror/codemirror-quickstart.LICENSE
+mkdir -p "$UBOL_DIR"/lib/csstree
+cp "$UBO_DIR"/src/lib/csstree/* "$UBOL_DIR"/lib/csstree/
 
 echo "*** uBOLite.mv3: Generating rulesets"
 UBOL_BUILD_DIR=$(mktemp -d)
@@ -120,6 +129,8 @@ cp platform/mv3/*.json "$UBOL_BUILD_DIR"/
 cp platform/mv3/*.js "$UBOL_BUILD_DIR"/
 cp platform/mv3/*.mjs "$UBOL_BUILD_DIR"/
 cp platform/mv3/extension/js/utils.js "$UBOL_BUILD_DIR"/js/
+cp "$UBO_DIR"/src/js/regex-analyzer.js "$UBOL_BUILD_DIR"/js/
+cp -R "$UBO_DIR"/src/lib/regexanalyzer "$UBOL_BUILD_DIR"/
 cp -R "$UBO_DIR"/src/js/resources "$UBOL_BUILD_DIR"/js/
 cp -R platform/mv3/scriptlets "$UBOL_BUILD_DIR"/
 mkdir -p "$UBOL_BUILD_DIR"/web_accessible_resources
@@ -141,23 +152,22 @@ echo "*** uBOLite.$PLATFORM: extension ready"
 echo "Extension location: $UBOL_DIR/"
 
 # Local build
+tmp_manifest=$(mktemp)
+chmod '=rw' "$tmp_manifest"
 if [ -z "$TAGNAME" ]; then
-    TAGNAME="uBOLite_$(jq -r .version "$UBOL_DIR"/manifest.json)"
+    TAGNAME="$(jq -r .version "$UBOL_DIR"/manifest.json)"
     # Enable DNR rule debugging
-    tmp=$(mktemp)
     jq '.permissions += ["declarativeNetRequestFeedback"]' \
-        "$UBOL_DIR/manifest.json" > "$tmp" \
-        && mv "$tmp" "$UBOL_DIR/manifest.json"
+        "$UBOL_DIR/manifest.json" > "$tmp_manifest" \
+        && mv "$tmp_manifest" "$UBOL_DIR/manifest.json"
     # Use a different extension id than the official one
     if [ "$PLATFORM" = "firefox" ]; then
-        tmp=$(mktemp)
-        jq '.browser_specific_settings.gecko.id = "uBOLite.dev@raymondhill.net"' "$UBOL_DIR/manifest.json"  > "$tmp" \
-            && mv "$tmp" "$UBOL_DIR/manifest.json"
+        jq '.browser_specific_settings.gecko.id = "uBOLite.dev@raymondhill.net"' "$UBOL_DIR/manifest.json"  > "$tmp_manifest" \
+            && mv "$tmp_manifest" "$UBOL_DIR/manifest.json"
     fi
 else
-    tmp=$(mktemp)
-    jq --arg version "${TAGNAME:8}" '.version = $version' "$UBOL_DIR/manifest.json"  > "$tmp" \
-        && mv "$tmp" "$UBOL_DIR/manifest.json"
+    jq --arg version "${TAGNAME}" '.version = $version' "$UBOL_DIR/manifest.json"  > "$tmp_manifest" \
+        && mv "$tmp_manifest" "$UBOL_DIR/manifest.json"
 fi
 
 # Platform-specific steps
@@ -178,7 +188,7 @@ if [ "$FULL" = "yes" ]; then
         EXTENSION="xpi"
     fi
     echo "*** uBOLite.mv3: Creating publishable package..."
-    UBOL_PACKAGE_NAME="$TAGNAME.$PLATFORM.mv3.$EXTENSION"
+    UBOL_PACKAGE_NAME="uBOLite_$TAGNAME.$PLATFORM.$EXTENSION"
     UBOL_PACKAGE_DIR=$(mktemp -d)
     mkdir -p "$UBOL_PACKAGE_DIR"
     cp -R "$UBOL_DIR"/* "$UBOL_PACKAGE_DIR"/

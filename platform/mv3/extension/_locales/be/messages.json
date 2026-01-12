@@ -19,6 +19,10 @@
     "message": "Налады",
     "description": "appears as tab name in dashboard"
   },
+  "customFiltersPageName": {
+    "message": "Уласныя фільтры",
+    "description": "appears as tab name in dashboard"
+  },
   "developPageName": {
     "message": "Распрацоўка",
     "description": "appears as tab name in dashboard. Inspired from 'Develop' menu in Safari, see https://developer.apple.com/documentation/safari-developer-tools/develop-menu"
@@ -34,6 +38,10 @@
   "popupFilteringModeLabel": {
     "message": "рэжым фільтравання",
     "description": "Label in the popup panel for the current filtering mode"
+  },
+  "popupLocalToolsLabel": {
+    "message": "На гэтым сайце",
+    "description": "Label in the popup panel for the local tools section"
   },
   "popupTipReport": {
     "message": "Паведаміць пра праблему на гэтым вэб-сайце",
@@ -78,6 +86,14 @@
   "3pGroupRegions": {
     "message": "Рэгіёны, мовы",
     "description": "Header for a ruleset section in 'Filter lists pane'"
+  },
+  "customFiltersImportExportLabel": {
+    "message": "Імпартаваць/экспартаваць",
+    "description": "Text label heading the import/export area of custom filters"
+  },
+  "customFiltersImportTextareaPlaceholder": {
+    "message": "Paste here specific cosmetic filters to add",
+    "description": "Placeholder text which describes the purpose of the textarea widget"
   },
   "aboutChangelog": {
     "message": "Журнал змяненняў",
@@ -173,7 +189,7 @@
   },
   "supportReportSpecificButton": {
     "message": "Стварыць новую справаздачу",
-    "description": "Text for button which open an external webpage in Support pane"
+    "description": "Text for button which opens an external web page in Support pane"
   },
   "defaultFilteringModeSectionLabel": {
     "message": "Прадвызначаны рэжым фільтравання",
@@ -244,8 +260,20 @@
     "description": "Label for a checkbox in the options page"
   },
   "developerModeLegend": {
-    "message": "Enables access to features suitable for technical users.",
+    "message": "Забяспечвае доступ да функцый, прыдатным для тэхнічных карыстальнікаў.",
     "description": "Short description for a checkbox in the options page"
+  },
+  "settingsBackupRestoreLabel": {
+    "message": "Рэзервовая копія",
+    "description": "The header text for the back up/restore section"
+  },
+  "settingsBackupRestoreSummary": {
+    "message": "Стварыць рэзервовую копію ўласных налад у файл або аднавіць уласныя налады з файла.",
+    "description": "A summary description of the back up/restore section."
+  },
+  "settingsBackupRestoreLegend": {
+    "message": "Аднаўленне перазапіша ўсе вашыя бягучыя ўласныя налады.",
+    "description": "Important information about the back up/restore section."
   },
   "findListsPlaceholder": {
     "message": "Знайсці спісы",
@@ -253,7 +281,7 @@
   },
   "strictblockTitle": {
     "message": "Старонка заблакаваная",
-    "description": "Webpage title for the strict-blocked page"
+    "description": "Web page title for the strict-blocked page"
   },
   "strictblockSentence1": {
     "message": "uBO Lite  папярэдзіў чытанне наступнай старонкі:",
@@ -273,7 +301,7 @@
   },
   "strictblockBack": {
     "message": "Вярнуцца",
-    "description": "A button to go back to the previous webpage"
+    "description": "A button to go back to the previous web page"
   },
   "strictblockClose": {
     "message": "Закрыць гэтае акно",
@@ -295,28 +323,36 @@
     "message": "Выйсці з рэжыму імгненнага хавання элементаў",
     "description": "Tooltip for the button used to exit zapper mode"
   },
+  "pickerTipEnter": {
+    "message": "Стварыць уласны фільтр",
+    "description": "Label for the menu entry to create cosmetic filters"
+  },
+  "unpickerTipEnter": {
+    "message": "Выдаліць уласны фільтр",
+    "description": "Label for the menu entry to delete cosmetic filters"
+  },
   "developDropdownLabel": {
-    "message": "View:",
+    "message": "Выгляд",
     "description": "A label of a dropdown list"
   },
   "developOptionFilteringModeDetails": {
-    "message": "Filtering mode details",
+    "message": "Падрабязныя звесткі аб рэжыме фільтрацыі",
     "description": "An option in a dropdown list"
   },
   "developOptionCustomDnrRules": {
-    "message": "Custom DNR rules",
+    "message": "Уласныя правілы DNR",
     "description": "An option in a dropdown list"
   },
   "developOptionDnrRulesOf": {
-    "message": "DNR rules of …",
+    "message": "Правілы у DNR",
     "description": "A section header in a dropdown list"
   },
   "developOptionDynamicRuleset": {
-    "message": "Dynamic ruleset",
+    "message": "Дынамічны набор правілаў",
     "description": "An option in a dropdown list"
   },
   "developOptionSessionRuleset": {
-    "message": "Session ruleset",
+    "message": "Набор правілаў сеансу",
     "description": "An option in a dropdown list"
   },
   "saveButton": {
@@ -327,6 +363,10 @@
     "message": "Вярнуць",
     "description": "Text for buttons used to revert changes"
   },
+  "addButton": {
+    "message": "Дадаць",
+    "description": "Text for buttons used to add content"
+  },
   "importAndAppendButton": {
     "message": "Імпартаваць ды дадаць…",
     "description": "Text for buttons used to import and append content"
@@ -335,12 +375,48 @@
     "message": "Экспартаваць…",
     "description": "Text for buttons used to export content"
   },
+  "backupButton": {
+    "message": "Стварыць копію…",
+    "description": "Text for buttons used to back up content"
+  },
+  "restoreButton": {
+    "message": "Аднавіць…",
+    "description": "Text for buttons used to restore content"
+  },
+  "resetToDefaultButton": {
+    "message": "Reset to default settings…",
+    "description": "Text for buttons used to reset configurations to default"
+  },
+  "resetToDefaultConfirm": {
+    "message": "All your custom settings will be removed. Do you really want to reset to default settings?",
+    "description": "Message asking user to confirm reset to default settings"
+  },
   "dnrRulesWarning": {
-    "message": "Do not add content from untrusted sources",
+    "message": "Не дадавайце кантэнт з ненадзейных крыніц",
     "description": "Short description of the DNR rules editor pane"
   },
   "dnrRulesCountInfo": {
-    "message": "Number of registered rules: {count}",
+    "message": "Колькасць зарэгістраваных правілаў: {count}",
     "description": "Short sentence to report the number of currently registered DNR rules"
+  },
+  "pickerSliderLabel": {
+    "message": "Перасуньце паўзунок, каб выбраць найлепшы варыянт",
+    "description": "Label to describe the purpose of the slider"
+  },
+  "pickerPick": {
+    "message": "Выбраць",
+    "description": "Text for the button to re-enter element-picking mode"
+  },
+  "pickerPreview": {
+    "message": "Папярэдні прагляд",
+    "description": "Text for the button to activate preview mode"
+  },
+  "pickerCreate": {
+    "message": "Стварыць",
+    "description": "Text for the button to create the filter"
+  },
+  "unpickerUsage": {
+    "message": "Выберыце фільтр ніжэй, каб вылучыць адпаведныя элементы на старонцы. Націсніце на кошык, каб выдаліць фільтр.",
+    "description": "Summary description on how to use the tool to remove custom filters"
   }
 }

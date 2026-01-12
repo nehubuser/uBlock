@@ -21,35 +21,206 @@
 
 import { builtinScriptlets } from './js/resources/scriptlets.js';
 import fs from 'fs/promises';
+import { literalStrFromRegex } from './js/regex-analyzer.js';
 import { safeReplace } from './safe-replace.js';
 
 /******************************************************************************/
 
 const resourceDetails = new Map();
 const resourceAliases = new Map();
-const scriptletFiles = new Map();
+const worldTemplate = {
+    scriptletFunctions: new Map(),
+    allFunctions: new Map(),
+    args: new Map(),
+    arglists: new Map(),
+    hostnames: new Map(),
+    regexesOrPaths: new Map(),
+    matches: new Set(),
+    hasEntities: false,
+    hasAncestors: false,
+};
+const worlds = {
+    ISOLATED: structuredClone(worldTemplate),
+    MAIN: structuredClone(worldTemplate),
+};
 
 /******************************************************************************/
 
-function createScriptletCoreCode(scriptletToken) {
-    const details = resourceDetails.get(scriptletToken);
-    const components = new Map([ [ scriptletToken, details.code ] ]);
-    const dependencies = details.dependencies && details.dependencies.slice() || [];
+function createScriptletCoreCode(worldDetails, resourceEntry) {
+    const { allFunctions } = worldDetails;
+    allFunctions.set(resourceEntry.name, resourceEntry.code);
+    const dependencies = resourceEntry.dependencies &&
+        resourceEntry.dependencies.slice() || [];
     while ( dependencies.length !== 0 ) {
         const token = dependencies.shift();
-        if ( components.has(token) ) { continue; }
         const details = resourceDetails.get(token);
         if ( details === undefined ) { continue; }
-        components.set(token, details.code);
+        if ( allFunctions.has(details.name) ) { continue; }
+        allFunctions.set(details.name, details.code);
         if ( Array.isArray(details.dependencies) === false ) { continue; }
         dependencies.push(...details.dependencies);
     }
-    return Array.from(components.values()).join('\n\n');
 }
 
 /******************************************************************************/
 
-export function init() {
+export function reset() {
+    worlds.ISOLATED = structuredClone(worldTemplate);
+    worlds.MAIN = structuredClone(worldTemplate);
+}
+
+/******************************************************************************/
+
+export function compile(assetDetails, details) {
+    if ( details.args[0].endsWith('.js') === false ) {
+        details.args[0] += '.js';
+    }
+    if ( resourceAliases.has(details.args[0]) ) {
+        details.args[0] = resourceAliases.get(details.args[0]);
+    }
+    const scriptletToken = details.args[0];
+    const resourceEntry = resourceDetails.get(scriptletToken);
+    if ( resourceEntry === undefined ) { return; }
+    if ( resourceEntry.requiresTrust && details.trustedSource !== true ) {
+        console.log(`Rejecting +js(${details.args.join()}): ${assetDetails.id} is not trusted`);
+        return;
+    }
+    const worldDetails = worlds[resourceEntry.world];
+    const { scriptletFunctions } = worldDetails;
+    if ( scriptletFunctions.has(resourceEntry.name) === false ) {
+        scriptletFunctions.set(resourceEntry.name, scriptletFunctions.size);
+        createScriptletCoreCode(worldDetails, resourceEntry);
+    }
+    // Convert args to arg indices
+    const arglist = details.args.slice();
+    arglist[0] = scriptletFunctions.get(resourceEntry.name);
+    for ( let i = 1; i < arglist.length; i++ ) {
+        const arg = arglist[i];
+        if ( worldDetails.args.has(arg) === false ) {
+            worldDetails.args.set(arg, worldDetails.args.size);
+        }
+        arglist[i] = worldDetails.args.get(arg);
+    }
+    const arglistKey = JSON.stringify(arglist).slice(1, -1);
+    if ( worldDetails.arglists.has(arglistKey) === false ) {
+        worldDetails.arglists.set(arglistKey, worldDetails.arglists.size);
+    }
+    const arglistIndex = worldDetails.arglists.get(arglistKey);
+    if ( details.matches ) {
+        for ( const hn of details.matches ) {
+            if ( hn.includes('/') ) {
+                worldDetails.matches.clear();
+                worldDetails.matches.add('*');
+                if ( worldDetails.regexesOrPaths.has(hn) === false ) {
+                    worldDetails.regexesOrPaths.set(hn, new Set());
+                }
+                worldDetails.regexesOrPaths.get(hn).add(arglistIndex);
+                continue;
+            }
+            const isEntity = hn.endsWith('.*') || hn.endsWith('.*>>');
+            worldDetails.hasEntities ||= isEntity;
+            const isAncestor = hn.endsWith('>>')
+            worldDetails.hasAncestors ||= isAncestor;
+            if ( isEntity || isAncestor ) {
+                worldDetails.matches.clear();
+                worldDetails.matches.add('*');
+            }
+            if ( worldDetails.matches.has('*') === false ) {
+                worldDetails.matches.add(hn);
+            }
+            if ( worldDetails.hostnames.has(hn) === false ) {
+                worldDetails.hostnames.set(hn, new Set());
+            }
+            worldDetails.hostnames.get(hn).add(arglistIndex);
+        }
+    } else {
+        worldDetails.matches.add('*');
+    }
+    if ( details.excludeMatches ) {
+        for ( const hn of details.excludeMatches ) {
+            if ( hn.includes('/') ) {
+                if ( worldDetails.regexesOrPaths.has(hn) === false ) {
+                    worldDetails.regexesOrPaths.set(hn, new Set());
+                }
+                worldDetails.regexesOrPaths.get(hn).add(~arglistIndex);
+                continue;
+            }
+            if ( worldDetails.hostnames.has(hn) === false ) {
+                worldDetails.hostnames.set(hn, new Set());
+            }
+            worldDetails.hostnames.get(hn).add(~arglistIndex);
+        }
+    }
+}
+
+/******************************************************************************/
+
+export async function commit(rulesetId, path, writeFn) {
+    const scriptletTemplate = await fs.readFile(
+        './scriptlets/scriptlet.template.js',
+        { encoding: 'utf8' }
+    );
+    const stats = {};
+    for ( const world of Object.keys(worlds) ) {
+        const worldDetails = worlds[world];
+        const { scriptletFunctions, allFunctions, args, arglists } = worldDetails;
+        if ( scriptletFunctions.size === 0 ) { continue; }
+        const hostnames = Array.from(worldDetails.hostnames).toSorted((a, b) => {
+            const d = a[0].length - b[0].length;
+            if ( d !== 0 ) { return d; }
+            return a[0] < b[0] ? -1 : 1;
+        }).map(a => ([ a[0], JSON.stringify(Array.from(a[1]).map(a => JSON.parse(a))).slice(1,-1)]));
+        const scriptletFromRegexes = Array.from(worldDetails.regexesOrPaths)
+            .filter(a => a[0].startsWith('/') && a[0].endsWith('/'))
+            .map(a => {
+                const restr = a[0].slice(1,-1);
+                return [
+                    literalStrFromRegex(restr).slice(0,8),
+                    restr,
+                    JSON.stringify(Array.from(a[1])).slice(1,-1),
+                ];
+            }).flat();
+        let content = safeReplace(scriptletTemplate, 'self.$hasEntities$', JSON.stringify(worldDetails.hasEntities));
+        content = safeReplace(content, 'self.$hasAncestors$', JSON.stringify(worldDetails.hasAncestors));
+        content = safeReplace(content, 'self.$hasRegexes$', JSON.stringify(scriptletFromRegexes.length !== 0));
+        content = safeReplace(content,
+            'self.$scriptletFromRegexes$',
+            `/* ${worldDetails.regexesOrPaths.size} */ ${JSON.stringify(scriptletFromRegexes)}`
+        );
+        content = safeReplace(content,
+            'self.$scriptletHostnames$',
+            `/* ${hostnames.length} */ ${JSON.stringify(hostnames.map(a => a[0]))}`
+        );
+        content = safeReplace(content,
+            'self.$scriptletArglistRefs$',
+            `/* ${hostnames.length} */ ${JSON.stringify(hostnames.map(a => a[1]).join(';'))}`
+        );
+        content = safeReplace(content,
+            'self.$scriptletArglists$',
+            `/* ${arglists.size} */ ${JSON.stringify(Array.from(arglists.keys()).join(';'))}`
+        );
+        content = safeReplace(content,
+            'self.$scriptletArgs$',
+            `/* ${args.size} */ ${JSON.stringify(Array.from(args.keys()))}`
+        );
+        content = safeReplace(content,
+            'self.$scriptletFunctions$',
+            `/* ${scriptletFunctions.size} */\n[${Array.from(scriptletFunctions.keys()).join(',')}]`
+        );
+        content = safeReplace(content,
+            'self.$scriptletCode$',
+            Array.from(allFunctions.values()).sort().join('\n\n')
+        );
+        content = safeReplace(content, /\$rulesetId\$/, rulesetId, 0);
+        writeFn(`${path}/${world.toLowerCase()}/${rulesetId}.js`, content);
+        stats[world] = Array.from(worldDetails.matches).sort();
+    }
+    return stats;
+}
+
+/******************************************************************************/
+
+function init() {
     for ( const scriptlet of builtinScriptlets ) {
         const { name, aliases, fn } = scriptlet;
         const entry = {
@@ -67,130 +238,6 @@ export function init() {
     }
 }
 
-/******************************************************************************/
-
-export function reset() {
-    scriptletFiles.clear();
-}
-
-/******************************************************************************/
-
-export function compile(assetDetails, details) {
-    if ( details.args[0].endsWith('.js') === false ) {
-        details.args[0] += '.js';
-    }
-    if ( resourceAliases.has(details.args[0]) ) {
-        details.args[0] = resourceAliases.get(details.args[0]);
-    }
-    const scriptletToken = details.args[0];
-    const resourceEntry = resourceDetails.get(scriptletToken);
-    if ( resourceEntry === undefined ) { return; }
-    const argsToken = JSON.stringify(details.args.slice(1));
-    if ( resourceEntry.requiresTrust && details.trustedSource !== true ) {
-        console.log(`Rejecting +js(${scriptletToken},${argsToken.slice(1,-1)}): ${assetDetails.id} is not trusted`);
-        return;
-    }
-    if ( scriptletFiles.has(scriptletToken) === false ) {
-        scriptletFiles.set(scriptletToken, {
-            name: resourceEntry.name,
-            code: createScriptletCoreCode(scriptletToken),
-            world: resourceEntry.world,
-            args: new Map(),
-            hostnames: new Map(),
-            exceptions: new Map(),
-            hasEntities: false,
-            hasAncestors: false,
-            matches: new Set(),
-        });
-    }
-    const scriptletDetails = scriptletFiles.get(scriptletToken);
-    if ( scriptletDetails.args.has(argsToken) === false ) {
-        scriptletDetails.args.set(argsToken, scriptletDetails.args.size);
-    }
-    const iArgs = scriptletDetails.args.get(argsToken);
-    if ( details.matches ) {
-        for ( const hn of details.matches ) {
-            const isEntity = hn.endsWith('.*') || hn.endsWith('.*>>');
-            scriptletDetails.hasEntities ||= isEntity;
-            const isAncestor = hn.endsWith('>>')
-            scriptletDetails.hasAncestors ||= isAncestor;
-            if ( isEntity || isAncestor ) {
-                scriptletDetails.matches.clear();
-                scriptletDetails.matches.add('*');
-            }
-            if ( scriptletDetails.matches.has('*') === false ) {
-                scriptletDetails.matches.add(hn);
-            }
-            if ( scriptletDetails.hostnames.has(hn) === false ) {
-                scriptletDetails.hostnames.set(hn, new Set());
-            }
-            scriptletDetails.hostnames.get(hn).add(iArgs);
-        }
-    } else {
-        scriptletDetails.matches.add('*');
-    }
-    if ( details.excludeMatches ) {
-        for ( const hn of details.excludeMatches ) {
-            if ( scriptletDetails.exceptions.has(hn) === false ) {
-                scriptletDetails.exceptions.set(hn, []);
-            }
-            scriptletDetails.exceptions.get(hn).push(iArgs);
-        }
-    }
-}
-
-/******************************************************************************/
-
-export async function commit(rulesetId, path, writeFn) {
-    const scriptletTemplate = await fs.readFile(
-        './scriptlets/scriptlet.template.js',
-        { encoding: 'utf8' }
-    );
-    const patchHnMap = hnmap => {
-        const out = Array.from(hnmap);
-        out.forEach(a => {
-            const values = Array.from(a[1]);
-            a[1] = values.length === 1 ? values[0] : values;
-        });
-        return out;
-    };
-    const scriptletStats = [];
-    for ( const [ name, details ] of scriptletFiles ) {
-        let content = safeReplace(scriptletTemplate,
-            'function $scriptletName$(){}',
-            details.code
-        );
-        content = safeReplace(content, /\$rulesetId\$/, rulesetId, 0);
-        content = safeReplace(content, /\$scriptletName\$/, details.name, 0);
-        content = safeReplace(content,
-            'self.$argsList$',
-            JSON.stringify(Array.from(details.args.keys()).map(a => JSON.parse(a)))
-        );
-        content = safeReplace(content,
-            'self.$hostnamesMap$',
-            JSON.stringify(patchHnMap(details.hostnames))
-        );
-        content = safeReplace(content,
-            'self.$hasEntities$',
-            JSON.stringify(details.hasEntities)
-        );
-        content = safeReplace(content,
-            'self.$hasAncestors$',
-            JSON.stringify(details.hasAncestors)
-        );
-        content = safeReplace(content,
-            'self.$exceptionsMap$',
-            JSON.stringify(Array.from(details.exceptions))
-        );
-        writeFn(`${path}/${rulesetId}.${name}`, content);
-        scriptletStats.push([
-            name.slice(0, -3), {
-                hostnames: Array.from(details.matches).sort(),
-                world: details.world,
-            }
-        ]);
-    }
-    return scriptletStats;
-}
+init();
 
 /******************************************************************************/

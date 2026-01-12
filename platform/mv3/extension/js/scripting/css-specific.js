@@ -21,7 +21,7 @@
 
 // Important!
 // Isolate from global scope
-(function uBOL_cssSpecific() {
+(async function uBOL_cssSpecific() {
 
 /******************************************************************************/
 
@@ -30,44 +30,10 @@ self.specificImports = undefined;
 
 /******************************************************************************/
 
-const selectors = [];
-const exceptions = [];
-
-const lookupHostname = (hostname, details, out) => {
-    let seqi = details.hostnamesMap.get(hostname);
-    if ( seqi === undefined ) { return; }
-    const { argsList, argsSeqs } = details;
-    for (;;) {
-        const argi = argsSeqs[seqi++];
-        const done = argi > 0;
-        out.push(...argsList[done ? argi : -argi].split('\n'));
-        if ( done ) { break; }
-    }
-};
-
-const lookupAll = hostname => {
-    for ( const details of specificImports ) {
-        lookupHostname(hostname, details, selectors);
-        lookupHostname(`~${hostname}`, details, exceptions);
-    }
-};
-
-self.isolatedAPI.forEachHostname(lookupAll, {
-    hasEntities: specificImports.some(a => a.hasEntities)
-});
-
-specificImports.length = 0;
-
-const exceptedSelectors = exceptions.length !== 0
-    ? selectors.filter(a => exceptions.includes(a) === false)
-    : selectors;
-if ( exceptedSelectors.length === 0 ) { return; }
-
-chrome.runtime.sendMessage({
-    what: 'insertCSS',
-    css: `${exceptedSelectors.join(',')}{display:none!important;}`,
-}).catch(( ) => {
-});
+const selectors = await self.cosmeticAPI.getSelectors('specific', specificImports);
+self.cosmeticAPI.release();
+if ( selectors.length === 0 ) { return; }
+self.cssAPI.insert(`${selectors.join(',\n')}{display:none!important;}`);
 
 /******************************************************************************/
 

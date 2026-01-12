@@ -174,7 +174,6 @@ export const NODE_TYPE_NET_OPTION_NAME_INLINESCRIPT = iota++;
 export const NODE_TYPE_NET_OPTION_NAME_IPADDRESS    = iota++;
 export const NODE_TYPE_NET_OPTION_NAME_MATCHCASE    = iota++;
 export const NODE_TYPE_NET_OPTION_NAME_MEDIA        = iota++;
-export const NODE_TYPE_NET_OPTION_NAME_MESSAGE      = iota++;
 export const NODE_TYPE_NET_OPTION_NAME_METHOD       = iota++;
 export const NODE_TYPE_NET_OPTION_NAME_MP4          = iota++;
 export const NODE_TYPE_NET_OPTION_NAME_NOOP         = iota++;
@@ -184,6 +183,7 @@ export const NODE_TYPE_NET_OPTION_NAME_PERMISSIONS  = iota++;
 export const NODE_TYPE_NET_OPTION_NAME_PING         = iota++;
 export const NODE_TYPE_NET_OPTION_NAME_POPUNDER     = iota++;
 export const NODE_TYPE_NET_OPTION_NAME_POPUP        = iota++;
+export const NODE_TYPE_NET_OPTION_NAME_REASON       = iota++;
 export const NODE_TYPE_NET_OPTION_NAME_REDIRECT     = iota++;
 export const NODE_TYPE_NET_OPTION_NAME_REDIRECTRULE = iota++;
 export const NODE_TYPE_NET_OPTION_NAME_REMOVEPARAM  = iota++;
@@ -256,7 +256,6 @@ export const nodeTypeFromOptionName = new Map([
     [ 'ipaddress', NODE_TYPE_NET_OPTION_NAME_IPADDRESS ],
     [ 'match-case', NODE_TYPE_NET_OPTION_NAME_MATCHCASE ],
     [ 'media', NODE_TYPE_NET_OPTION_NAME_MEDIA ],
-    [ 'message', NODE_TYPE_NET_OPTION_NAME_MESSAGE ],
     [ 'method', NODE_TYPE_NET_OPTION_NAME_METHOD ],
     [ 'mp4', NODE_TYPE_NET_OPTION_NAME_MP4 ],
     [ '_', NODE_TYPE_NET_OPTION_NAME_NOOP ],
@@ -268,6 +267,7 @@ export const nodeTypeFromOptionName = new Map([
     /* synonym */ [ 'beacon', NODE_TYPE_NET_OPTION_NAME_PING ],
     [ 'popunder', NODE_TYPE_NET_OPTION_NAME_POPUNDER ],
     [ 'popup', NODE_TYPE_NET_OPTION_NAME_POPUP ],
+    [ 'reason', NODE_TYPE_NET_OPTION_NAME_REASON ],
     [ 'redirect', NODE_TYPE_NET_OPTION_NAME_REDIRECT ],
     /* synonym */ [ 'rewrite', NODE_TYPE_NET_OPTION_NAME_REDIRECT ],
     [ 'redirect-rule', NODE_TYPE_NET_OPTION_NAME_REDIRECTRULE ],
@@ -841,6 +841,11 @@ export class AstFilterParser {
         this.netOptionValueParser = new ArglistParser(',');
         this.scriptletArgListParser = new ArglistParser(',');
         this.domainRegexValueParser = new ArglistParser('/');
+        this.reNetOptionTokens = new RegExp(
+            `^~?(${Array.from(netOptionTokenDescriptors.keys())
+                .map(s => escapeForRegex(s))
+                .join('|')})\\b`
+        );
     }
 
     finish() {
@@ -1195,7 +1200,7 @@ export class AstFilterParser {
             prev = this.linkRight(prev, next);
             patternBeg += 2;
         }
-        let anchorBeg = this.indexOfNetAnchor(parentStr, patternBeg);
+        let anchorBeg = this.indexOfNetAnchor(parentStr);
         if ( anchorBeg === -1 ) { return 0; }
         anchorBeg += parentBeg;
         if ( anchorBeg !== parentEnd ) {
@@ -1240,7 +1245,7 @@ export class AstFilterParser {
         let modifierType = 0;
         let requestTypeCount = 0;
         let unredirectableTypeCount = 0;
-        let badfilter = false;
+        let isBadfilter = false;
         for ( let i = 0, n = this.nodeTypeRegisterPtr; i < n; i++ ) {
             const type = this.nodeTypeRegister[i];
             const targetNode = this.nodeTypeLookupTable[type];
@@ -1264,7 +1269,7 @@ export class AstFilterParser {
                 realBad = hasValue;
                 break;
             case NODE_TYPE_NET_OPTION_NAME_BADFILTER:
-                badfilter = true;
+                isBadfilter = true;
                 /* falls through */
             case NODE_TYPE_NET_OPTION_NAME_NOOP:
                 realBad = isNegated || hasValue;
@@ -1273,7 +1278,6 @@ export class AstFilterParser {
             case NODE_TYPE_NET_OPTION_NAME_FONT:
             case NODE_TYPE_NET_OPTION_NAME_IMAGE:
             case NODE_TYPE_NET_OPTION_NAME_MEDIA:
-            case NODE_TYPE_NET_OPTION_NAME_OBJECT:
             case NODE_TYPE_NET_OPTION_NAME_OTHER:
             case NODE_TYPE_NET_OPTION_NAME_SCRIPT:
             case NODE_TYPE_NET_OPTION_NAME_XHR:
@@ -1301,6 +1305,7 @@ export class AstFilterParser {
                 break;
             case NODE_TYPE_NET_OPTION_NAME_DOC:
             case NODE_TYPE_NET_OPTION_NAME_FRAME:
+            case NODE_TYPE_NET_OPTION_NAME_OBJECT:
                 realBad = hasValue;
                 if ( realBad ) { break; }
                 docTypeCount += 1;
@@ -1352,9 +1357,6 @@ export class AstFilterParser {
             case NODE_TYPE_NET_OPTION_NAME_MATCHCASE:
                 realBad = this.isRegexPattern() === false;
                 break;
-            case NODE_TYPE_NET_OPTION_NAME_MESSAGE:
-                realBad = hasValue === false;
-                break;
             case NODE_TYPE_NET_OPTION_NAME_PERMISSIONS:
                 realBad = modifierType !== 0 ||
                     (hasValue || isException) === false ||
@@ -1369,7 +1371,9 @@ export class AstFilterParser {
                 realBad = hasValue;
                 if ( realBad ) { break; }
                 requestTypeCount += 1;
-                unredirectableTypeCount += 1;
+                if ( (flags & NODE_FLAG_IS_NEGATED) === 0 ) {
+                    unredirectableTypeCount += 1;
+                }
                 break;
             case NODE_TYPE_NET_OPTION_NAME_POPUNDER:
             case NODE_TYPE_NET_OPTION_NAME_POPUP:
@@ -1377,6 +1381,9 @@ export class AstFilterParser {
                 if ( realBad ) { break; }
                 abstractTypeCount += 1;
                 unredirectableTypeCount += 1;
+                break;
+            case NODE_TYPE_NET_OPTION_NAME_REASON:
+                realBad = hasValue === false;
                 break;
             case NODE_TYPE_NET_OPTION_NAME_REDIRECT:
             case NODE_TYPE_NET_OPTION_NAME_REDIRECTRULE:
@@ -1418,9 +1425,6 @@ export class AstFilterParser {
                 this.addFlags(AST_FLAG_HAS_ERROR);
             }
         }
-        const requiresTrustedSource = ( ) =>
-            this.options.trustedSource !== true &&
-            isException === false && badfilter === false;
         switch ( modifierType ) {
         case NODE_TYPE_NET_OPTION_NAME_CNAME:
             realBad = abstractTypeCount || behaviorTypeCount || requestTypeCount;
@@ -1448,7 +1452,8 @@ export class AstFilterParser {
         case NODE_TYPE_NET_OPTION_NAME_REPLACE: {
             realBad = abstractTypeCount || behaviorTypeCount || unredirectableTypeCount;
             if ( realBad ) { break; }
-            if ( requiresTrustedSource() ) {
+            if ( isException || isBadfilter ) { break; }
+            if ( this.options.trustedSource !== true ) {
                 this.astError = AST_ERROR_UNTRUSTED_SOURCE;
                 realBad = true;
                 break;
@@ -1463,7 +1468,8 @@ export class AstFilterParser {
         case NODE_TYPE_NET_OPTION_NAME_URLSKIP: {
             realBad = abstractTypeCount || behaviorTypeCount || unredirectableTypeCount;
             if ( realBad ) { break; }
-            if ( requiresTrustedSource() ) {
+            if ( isException || isBadfilter ) { break; }
+            if ( this.options.trustedSource !== true ) {
                 this.astError = AST_ERROR_UNTRUSTED_SOURCE;
                 realBad = true;
                 break;
@@ -1478,7 +1484,8 @@ export class AstFilterParser {
         case NODE_TYPE_NET_OPTION_NAME_URLTRANSFORM: {
             realBad = abstractTypeCount || behaviorTypeCount || unredirectableTypeCount;
             if ( realBad ) { break; }
-            if ( requiresTrustedSource() ) {
+            if ( isException || isBadfilter ) { break; }
+            if ( this.options.trustedSource !== true ) {
                 this.astError = AST_ERROR_UNTRUSTED_SOURCE;
                 realBad = true;
                 break;
@@ -1503,22 +1510,17 @@ export class AstFilterParser {
         }
     }
 
-    indexOfNetAnchor(s, start = 0) {
+    indexOfNetAnchor(s) {
         const end = s.length;
-        if ( end === start ) { return end; }
+        if ( end === 0 ) { return end; }
         let j = s.lastIndexOf('$');
         if ( j === -1 ) { return end; }
         if ( (j+1) === end ) { return end; }
         for (;;) {
             const before = s.charAt(j-1);
             if ( before === '$' ) { return -1; }
-            const after = s.charAt(j+1);
-            if ( ')/|'.includes(after) === false ) {
-                if ( before === '' || '"\'\\`'.includes(before) === false ) {
-                    return j;
-                }
-            }
-            if ( j === start ) { break; }
+            if ( this.reNetOptionTokens.test(s.slice(j+1)) ) { return j; }
+            if ( j === 0 ) { break; }
             j = s.lastIndexOf('$', j-1);
             if ( j === -1 ) { break; }
         }
@@ -2237,7 +2239,10 @@ export class AstFilterParser {
         const regex = before.startsWith('[$domain=/')
             ? `${before.slice(9, -1)}`
             : before;
-        const source = this.normalizeRegexPattern(regex);
+        // TODO: Remove unescaping of `|` once AdGuard filters no longer unduly
+        // escape. In the mean time, if a literal `|` is needed in a path-based
+        // regex, the solution is to use `\x7C` instead of `\|`.
+        const source = this.normalizeRegexPattern(regex.replace(/\\\|/g, '|'));
         if ( source === '' ) { return ''; }
         const after = `/${source}/`;
         if ( after === before ) { return; }
@@ -2970,7 +2975,7 @@ export class AstFilterParser {
             const indent = '  '.repeat(walker.depth);
             console.log(`${indent}type=${name} "${value}" 0b${bits}`);
             if ( this.isNodeTransformed(node) ) {
-                console.log(`${indent}    transform="${this.getNodeTransform(node)}`);
+                console.log(`${indent}    transform="${this.getNodeTransform(node)}"`);
             }
         }
     }
@@ -3080,9 +3085,10 @@ export function parseReplaceByRegexValue(s) {
     if ( parser.transform ) {
         pattern = parser.normalizeArg(pattern);
     }
-    if ( pattern === '' ) { return; }
-    pattern = parser.normalizeArg(pattern, '$');
-    pattern = parser.normalizeArg(pattern, ',');
+    if ( pattern !== '' ) {
+        pattern = parser.normalizeArg(pattern, '$');
+        pattern = parser.normalizeArg(pattern, ',');
+    }
     parser.nextArg(s, parser.separatorEnd);
     let replacement = s.slice(parser.argBeg, parser.argEnd);
     if ( parser.separatorEnd === parser.separatorBeg ) { return; }
@@ -3092,6 +3098,9 @@ export function parseReplaceByRegexValue(s) {
     replacement = parser.normalizeArg(replacement, '$');
     replacement = parser.normalizeArg(replacement, ',');
     const flags = s.slice(parser.separatorEnd);
+    if ( pattern === '' ) {
+        return { flags, replacement }
+    }
     try {
         return { re: new RegExp(pattern, flags), replacement };
     } catch {
@@ -3101,7 +3110,10 @@ export function parseReplaceByRegexValue(s) {
 export function parseReplaceValue(s) {
     if ( s.startsWith('/') ) {
         const r = parseReplaceByRegexValue(s);
-        if ( r ) { r.type = 'text'; }
+        if ( r ) {
+            if ( r.re === undefined ) { return; }
+            r.type = 'text';
+        }
         return r;
     }
     const pos = s.indexOf(':');
@@ -3154,7 +3166,6 @@ export const netOptionTokenDescriptors = new Map([
     [ 'ipaddress', { mustAssign: true } ],
     [ 'match-case', { } ],
     [ 'media', { canNegate: true } ],
-    [ 'message', { mustAssign: true } ],
     [ 'method', { mustAssign: true } ],
     [ 'mp4', { blockOnly: true } ],
     [ '_', { } ],
@@ -3166,6 +3177,7 @@ export const netOptionTokenDescriptors = new Map([
     /* synonym */ [ 'beacon', { canNegate: true } ],
     [ 'popunder', { } ],
     [ 'popup', { canNegate: true } ],
+    [ 'reason', { mustAssign: true } ],
     [ 'redirect', { mustAssign: true } ],
     /* synonym */ [ 'rewrite', { mustAssign: true } ],
     [ 'redirect-rule', { mustAssign: true } ],
@@ -3199,8 +3211,8 @@ export const netOptionTokenDescriptors = new Map([
 // https://github.com/uBlockOrigin/uBlock-issues/issues/89
 //   Do not discard unknown pseudo-elements.
 
-class ExtSelectorCompiler {
-    constructor(instanceOptions) {
+export class ExtSelectorCompiler {
+    constructor(instanceOptions = {}) {
         this.reParseRegexLiteral = /^\/(.+)\/([imu]+)?$/;
 
         // Use a regex for most common CSS selectors known to be valid in any

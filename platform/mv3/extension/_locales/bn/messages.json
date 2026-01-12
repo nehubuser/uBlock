@@ -19,6 +19,10 @@
     "message": "সেটিংস",
     "description": "appears as tab name in dashboard"
   },
+  "customFiltersPageName": {
+    "message": "Custom filters",
+    "description": "appears as tab name in dashboard"
+  },
   "developPageName": {
     "message": "Develop",
     "description": "appears as tab name in dashboard. Inspired from 'Develop' menu in Safari, see https://developer.apple.com/documentation/safari-developer-tools/develop-menu"
@@ -34,6 +38,10 @@
   "popupFilteringModeLabel": {
     "message": "ফিল্টারিং মোড",
     "description": "Label in the popup panel for the current filtering mode"
+  },
+  "popupLocalToolsLabel": {
+    "message": "On this website",
+    "description": "Label in the popup panel for the local tools section"
   },
   "popupTipReport": {
     "message": "এই ওয়েবসাইট নিয়ে সমস্যা জানাও",
@@ -78,6 +86,14 @@
   "3pGroupRegions": {
     "message": "অঞ্চল, ভাষা",
     "description": "Header for a ruleset section in 'Filter lists pane'"
+  },
+  "customFiltersImportExportLabel": {
+    "message": "Import / Export",
+    "description": "Text label heading the import/export area of custom filters"
+  },
+  "customFiltersImportTextareaPlaceholder": {
+    "message": "Paste here specific cosmetic filters to add",
+    "description": "Placeholder text which describes the purpose of the textarea widget"
   },
   "aboutChangelog": {
     "message": "পরিবর্তনসূচি",
@@ -173,7 +189,7 @@
   },
   "supportReportSpecificButton": {
     "message": "নতুন অভিযোগ",
-    "description": "Text for button which open an external webpage in Support pane"
+    "description": "Text for button which opens an external web page in Support pane"
   },
   "defaultFilteringModeSectionLabel": {
     "message": "ডিফল্ট ফিল্টারিং মোড",
@@ -247,13 +263,25 @@
     "message": "প্রযুক্তিগত ব্যবহারকারীদের জন্য উপযুক্ত বৈশিষ্ট্যগুলিতে অ্যাক্সেস সক্ষম করুন",
     "description": "Short description for a checkbox in the options page"
   },
+  "settingsBackupRestoreLabel": {
+    "message": "Backup",
+    "description": "The header text for the back up/restore section"
+  },
+  "settingsBackupRestoreSummary": {
+    "message": "Back up your custom settings to a file, or restore your custom settings from a file.",
+    "description": "A summary description of the back up/restore section."
+  },
+  "settingsBackupRestoreLegend": {
+    "message": "Restoring will overwrite all your current custom settings.",
+    "description": "Important information about the back up/restore section."
+  },
   "findListsPlaceholder": {
     "message": "তালিকা খুঁজো",
     "description": "Placeholder for the input field used to find lists"
   },
   "strictblockTitle": {
     "message": "পাতা অবরুদ্ধ",
-    "description": "Webpage title for the strict-blocked page"
+    "description": "Web page title for the strict-blocked page"
   },
   "strictblockSentence1": {
     "message": "ইউবিও লাইট এই পাতা লোড হওয়া আটকিয়েছে:",
@@ -273,7 +301,7 @@
   },
   "strictblockBack": {
     "message": "ফিরে যাও",
-    "description": "A button to go back to the previous webpage"
+    "description": "A button to go back to the previous web page"
   },
   "strictblockClose": {
     "message": "জানালা বন্ধ করো",
@@ -294,6 +322,14 @@
   "zapperTipQuit": {
     "message": "Exit element zapper mode",
     "description": "Tooltip for the button used to exit zapper mode"
+  },
+  "pickerTipEnter": {
+    "message": "Create a custom filter",
+    "description": "Label for the menu entry to create cosmetic filters"
+  },
+  "unpickerTipEnter": {
+    "message": "Remove a custom filter",
+    "description": "Label for the menu entry to delete cosmetic filters"
   },
   "developDropdownLabel": {
     "message": "View:",
@@ -327,6 +363,10 @@
     "message": "Revert",
     "description": "Text for buttons used to revert changes"
   },
+  "addButton": {
+    "message": "Add",
+    "description": "Text for buttons used to add content"
+  },
   "importAndAppendButton": {
     "message": "Import and append…",
     "description": "Text for buttons used to import and append content"
@@ -335,6 +375,22 @@
     "message": "Export…",
     "description": "Text for buttons used to export content"
   },
+  "backupButton": {
+    "message": "Back up…",
+    "description": "Text for buttons used to back up content"
+  },
+  "restoreButton": {
+    "message": "Restore…",
+    "description": "Text for buttons used to restore content"
+  },
+  "resetToDefaultButton": {
+    "message": "Reset to default settings…",
+    "description": "Text for buttons used to reset configurations to default"
+  },
+  "resetToDefaultConfirm": {
+    "message": "All your custom settings will be removed. Do you really want to reset to default settings?",
+    "description": "Message asking user to confirm reset to default settings"
+  },
   "dnrRulesWarning": {
     "message": "Do not add content from untrusted sources",
     "description": "Short description of the DNR rules editor pane"
@@ -342,5 +398,25 @@
   "dnrRulesCountInfo": {
     "message": "Number of registered rules: {count}",
     "description": "Short sentence to report the number of currently registered DNR rules"
+  },
+  "pickerSliderLabel": {
+    "message": "Move the slider to select the best match",
+    "description": "Label to describe the purpose of the slider"
+  },
+  "pickerPick": {
+    "message": "Pick",
+    "description": "Text for the button to re-enter element-picking mode"
+  },
+  "pickerPreview": {
+    "message": "Preview",
+    "description": "Text for the button to activate preview mode"
+  },
+  "pickerCreate": {
+    "message": "Create",
+    "description": "Text for the button to create the filter"
+  },
+  "unpickerUsage": {
+    "message": "Select a filter below to highlight matching elements in the web page. Click the trash can to remove a filter.",
+    "description": "Summary description on how to use the tool to remove custom filters"
   }
 }

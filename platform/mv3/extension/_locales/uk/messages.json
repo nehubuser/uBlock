@@ -19,6 +19,10 @@
     "message": "Налаштування",
     "description": "appears as tab name in dashboard"
   },
+  "customFiltersPageName": {
+    "message": "Користувацькі фільтри",
+    "description": "appears as tab name in dashboard"
+  },
   "developPageName": {
     "message": "Розробка",
     "description": "appears as tab name in dashboard. Inspired from 'Develop' menu in Safari, see https://developer.apple.com/documentation/safari-developer-tools/develop-menu"
@@ -34,6 +38,10 @@
   "popupFilteringModeLabel": {
     "message": "режим фільтрації",
     "description": "Label in the popup panel for the current filtering mode"
+  },
+  "popupLocalToolsLabel": {
+    "message": "На цьому вебсайті",
+    "description": "Label in the popup panel for the local tools section"
   },
   "popupTipReport": {
     "message": "Повідомити про помилку на цьому вебсайті",
@@ -78,6 +86,14 @@
   "3pGroupRegions": {
     "message": "Регіони, мови",
     "description": "Header for a ruleset section in 'Filter lists pane'"
+  },
+  "customFiltersImportExportLabel": {
+    "message": "Імпорт / Експорт",
+    "description": "Text label heading the import/export area of custom filters"
+  },
+  "customFiltersImportTextareaPlaceholder": {
+    "message": "Вставте сюди конкретні косметичні фільтри, які потрібно додати",
+    "description": "Placeholder text which describes the purpose of the textarea widget"
   },
   "aboutChangelog": {
     "message": "Журнал змін",
@@ -173,7 +189,7 @@
   },
   "supportReportSpecificButton": {
     "message": "Створити новий звіт",
-    "description": "Text for button which open an external webpage in Support pane"
+    "description": "Text for button which opens an external web page in Support pane"
   },
   "defaultFilteringModeSectionLabel": {
     "message": "Типовий режим фільтрування",
@@ -247,13 +263,25 @@
     "message": "Відкрити доступ до можливостей, які актуальні для технічних користувачів",
     "description": "Short description for a checkbox in the options page"
   },
+  "settingsBackupRestoreLabel": {
+    "message": "Резервне копіювання",
+    "description": "The header text for the back up/restore section"
+  },
+  "settingsBackupRestoreSummary": {
+    "message": "Створіть резервну копію власних налаштувань у файлі або відновіть власні налаштування з файлу.",
+    "description": "A summary description of the back up/restore section."
+  },
+  "settingsBackupRestoreLegend": {
+    "message": "Відновлення призведе до перезапису всіх ваших поточних налаштувань.",
+    "description": "Important information about the back up/restore section."
+  },
   "findListsPlaceholder": {
     "message": "Знайти списки",
     "description": "Placeholder for the input field used to find lists"
   },
   "strictblockTitle": {
     "message": "Сторінку заблоковано",
-    "description": "Webpage title for the strict-blocked page"
+    "description": "Web page title for the strict-blocked page"
   },
   "strictblockSentence1": {
     "message": "uBO Lite заблокував завантаження таких сторінок:",
@@ -273,7 +301,7 @@
   },
   "strictblockBack": {
     "message": "Повернутися",
-    "description": "A button to go back to the previous webpage"
+    "description": "A button to go back to the previous web page"
   },
   "strictblockClose": {
     "message": "Закрити це вікно",
@@ -295,28 +323,36 @@
     "message": "Вийти з режиму тимчасового приховування елементів",
     "description": "Tooltip for the button used to exit zapper mode"
   },
+  "pickerTipEnter": {
+    "message": "Створити власний фільтр",
+    "description": "Label for the menu entry to create cosmetic filters"
+  },
+  "unpickerTipEnter": {
+    "message": "Вилучити власний фільтр",
+    "description": "Label for the menu entry to delete cosmetic filters"
+  },
   "developDropdownLabel": {
-    "message": "View:",
+    "message": "Перегляд:",
     "description": "A label of a dropdown list"
   },
   "developOptionFilteringModeDetails": {
-    "message": "Filtering mode details",
+    "message": "Подробиці режиму фільтрації",
     "description": "An option in a dropdown list"
   },
   "developOptionCustomDnrRules": {
-    "message": "Custom DNR rules",
+    "message": "Користувацькі правила DNR",
     "description": "An option in a dropdown list"
   },
   "developOptionDnrRulesOf": {
-    "message": "DNR rules of …",
+    "message": "Правила DNR для…",
     "description": "A section header in a dropdown list"
   },
   "developOptionDynamicRuleset": {
-    "message": "Dynamic ruleset",
+    "message": "Динамічний набір правил",
     "description": "An option in a dropdown list"
   },
   "developOptionSessionRuleset": {
-    "message": "Session ruleset",
+    "message": "Набір правил для сесії",
     "description": "An option in a dropdown list"
   },
   "saveButton": {
@@ -327,6 +363,10 @@
     "message": "Повернути",
     "description": "Text for buttons used to revert changes"
   },
+  "addButton": {
+    "message": "Додати",
+    "description": "Text for buttons used to add content"
+  },
   "importAndAppendButton": {
     "message": "Імпортувати та додати…",
     "description": "Text for buttons used to import and append content"
@@ -335,12 +375,48 @@
     "message": "Експортувати…",
     "description": "Text for buttons used to export content"
   },
+  "backupButton": {
+    "message": "Створити…",
+    "description": "Text for buttons used to back up content"
+  },
+  "restoreButton": {
+    "message": "Відновити…",
+    "description": "Text for buttons used to restore content"
+  },
+  "resetToDefaultButton": {
+    "message": "Скинути до усталених налаштувань…",
+    "description": "Text for buttons used to reset configurations to default"
+  },
+  "resetToDefaultConfirm": {
+    "message": "Усі користувацькі налаштування буде вилучено. Хочете скинути налаштування до типових?",
+    "description": "Message asking user to confirm reset to default settings"
+  },
   "dnrRulesWarning": {
-    "message": "Do not add content from untrusted sources",
+    "message": "Не додавати вміст з невідомих джерел",
     "description": "Short description of the DNR rules editor pane"
   },
   "dnrRulesCountInfo": {
     "message": "Кількість зареєстрованих правил: {count}",
     "description": "Short sentence to report the number of currently registered DNR rules"
+  },
+  "pickerSliderLabel": {
+    "message": "Переміщайте повзунок для вибору кращого варіанту",
+    "description": "Label to describe the purpose of the slider"
+  },
+  "pickerPick": {
+    "message": "Вибрати",
+    "description": "Text for the button to re-enter element-picking mode"
+  },
+  "pickerPreview": {
+    "message": "Попередній перегляд",
+    "description": "Text for the button to activate preview mode"
+  },
+  "pickerCreate": {
+    "message": "Створити",
+    "description": "Text for the button to create the filter"
+  },
+  "unpickerUsage": {
+    "message": "Виберіть фільтр нижче, щоб підсвітити відповідні елементи на сторінці. Натисніть на кошик для видалення фільтра.",
+    "description": "Summary description on how to use the tool to remove custom filters"
   }
 }

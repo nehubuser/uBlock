@@ -105,10 +105,10 @@ const subtractHostnameIters = (itera, iterb) => {
 
 /******************************************************************************/
 
-const matchFromHostname = hn =>
+export const matchFromHostname = hn =>
     hn === '*' || hn === 'all-urls' ? '<all_urls>' : `*://*.${hn}/*`;
 
-const matchesFromHostnames = hostnames => {
+export const matchesFromHostnames = hostnames => {
     const out = [];
     for ( const hn of hostnames ) {
         out.push(matchFromHostname(hn));
@@ -116,16 +116,19 @@ const matchesFromHostnames = hostnames => {
     return out;
 };
 
-const hostnamesFromMatches = origins => {
+export const hostnameFromMatch = origin => {
+    if ( origin === '<all_urls>' || origin === '*://*/*' ) { return 'all-urls'; }
+    const match = /^[^:]+:\/\/(?:\*\.)?([^/]+)\/\*/.exec(origin);
+    if ( match === null ) { return ''; }
+    return match[1];
+};
+
+export const hostnamesFromMatches = origins => {
     const out = [];
     for ( const origin of origins ) {
-        if ( origin === '<all_urls>' || origin === '*://*/*' ) {
-            out.push('all-urls');
-            continue;
-        }
-        const match = /^\*:\/\/(?:\*\.)?([^/]+)\/\*/.exec(origin);
-        if ( match === null ) { continue; }
-        out.push(match[1]);
+        const hn = hostnameFromMatch(origin);
+        if ( hn === '' ) { continue; }
+        out.push(hn);
     }
     return out;
 };
@@ -195,6 +198,20 @@ const strArrayEq = (a = [], b = [], sort = true) => {
 
 /******************************************************************************/
 
+// The goal is just to be able to find out whether a specific version is older
+// than another one.
+
+export function intFromVersion(version) {
+    const match = /^(\d+)\.(\d+)\.(\d+)$/.exec(version);
+    if ( match === null ) { return 0; }
+    const year = parseInt(match[1], 10);
+    const monthday = parseInt(match[2], 10);
+    const min = parseInt(match[3], 10);
+    return (year - 2022) * (1232 * 2400) + monthday * 2400 + min;
+}
+
+/******************************************************************************/
+
 export {
     broadcastMessage,
     parsedURLromOrigin,
@@ -203,9 +220,6 @@ export {
     isDescendantHostnameOfIter,
     intersectHostnameIters,
     subtractHostnameIters,
-    matchFromHostname,
-    matchesFromHostnames,
-    hostnamesFromMatches,
     hasBroadHostPermissions,
     gotoURL,
     strArrayEq,

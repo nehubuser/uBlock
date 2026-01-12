@@ -149,6 +149,24 @@
 		],
 		"supportURL": "https://github.com/uBlockOrigin/uAssets"
 	},
+	"ublock-experimental": {
+		"content": "filters",
+		"group": "default",
+		"off": true,
+		"title": "uBlock filters – Experimental",
+		"contentURL": "https://ublockorigin.github.io/uAssets/filters/experimental.txt",
+		"cdnURLs": [
+			"https://ublockorigin.github.io/uAssetsCDN/filters/experimental.min.txt",
+			"https://ublockorigin.pages.dev/filters/experimental.min.txt",
+			"https://cdn.jsdelivr.net/gh/uBlockOrigin/uAssetsCDN@main/filters/experimental.min.txt",
+			"https://cdn.statically.io/gh/uBlockOrigin/uAssetsCDN/main/filters/experimental.min.txt"
+		],
+		"patchURLs": [
+			"https://ublockorigin.github.io/uAssetsCDN/filters/",
+			"https://ublockorigin.pages.dev/filters/"
+		],
+		"supportURL": "https://github.com/uBlockOrigin/uAssets"
+	},
 	"adguard-generic": {
 		"content": "filters",
 		"group": "ads",
@@ -193,18 +211,16 @@
 		"content": "filters",
 		"group": "privacy",
 		"off": true,
-		"title": "AdGuard URL Tracking Protection",
+		"title": "AdGuard/uBO – URL Tracking Protection",
 		"tags": "privacy",
-		"contentURL": "https://filters.adtidy.org/extension/ublock/filters/17.txt",
-		"supportURL": "https://github.com/AdguardTeam/AdguardFilters#adguard-filters"
-	},
-	"adguard-spyware": {
-		"content": "filters",
-		"group": "privacy",
-		"off": true,
-		"title": "AdGuard Tracking Protection",
-		"contentURL": "https://filters.adtidy.org/extension/ublock/filters/3.txt",
-		"supportURL": "https://github.com/AdguardTeam/AdguardFilters#adguard-filters"
+		"contentURL": "https://ublockorigin.github.io/uAssets/filters/privacy-removeparam.txt",
+		"cdnURLs": [
+			"https://ublockorigin.github.io/uAssetsCDN/filters/privacy-removeparam.txt",
+			"https://ublockorigin.pages.dev/filters/privacy-removeparam.txt",
+			"https://cdn.jsdelivr.net/gh/uBlockOrigin/uAssetsCDN@main/filters/privacy-removeparam.txt",
+			"https://cdn.statically.io/gh/uBlockOrigin/uAssetsCDN/main/filters/privacy-removeparam.txt"
+		],
+		"supportURL": "https://github.com/uBlockOrigin/uAssets"
 	},
 	"block-lan": {
 		"content": "filters",
@@ -455,6 +471,23 @@
 		],
 		"supportURL": "https://github.com/easylist/easylist#fanboy-lists"
 	},
+	"fanboy-ai-suggestions": {
+		"content": "filters",
+		"group": "annoyances",
+		"parent": "EasyList – Annoyances",
+		"off": true,
+		"title": "EasyList – AI Suggestions",
+		"tags": "annoyances",
+		"preferred": true,
+		"contentURL": "https://ublockorigin.github.io/uAssets/thirdparties/easylist-ai.txt",
+		"cdnURLs": [
+			"https://ublockorigin.github.io/uAssetsCDN/thirdparties/easylist-ai.txt",
+			"https://ublockorigin.pages.dev/thirdparties/easylist-ai.txt",
+			"https://cdn.jsdelivr.net/gh/uBlockOrigin/uAssetsCDN@main/thirdparties/easylist-ai.txt",
+			"https://cdn.statically.io/gh/uBlockOrigin/uAssetsCDN/main/thirdparties/easylist-ai.txt"
+		],
+		"supportURL": "https://github.com/easylist/easylist#fanboy-lists"
+	},
 	"easylist-newsletters": {
 		"content": "filters",
 		"group": "annoyances",
@@ -606,8 +639,8 @@
 		"title": "🇪🇪ee: Eesti saitidele kohandatud filter",
 		"tags": "ads estonian",
 		"lang": "et",
-		"contentURL": "https://adblock.ee/list.txt",
-		"supportURL": "https://adblock.ee"
+		"contentURL": "https://ubo-et.lepik.io/list.txt",
+		"supportURL": "https://github.com/sander85/uBO-et"
 	},
 	"FIN-0": {
 		"content": "filters",
@@ -838,7 +871,7 @@
 		"title": "🇵🇱pl: CERT.PL's Warning List",
 		"tags": "malware polish polski",
 		"lang": "szl pl",
-		"contentURL": "https://hole.cert.pl/domains/v2/domains_adblock.txt",
+		"contentURL": "https://hole.cert.pl/domains/v2/domains_ublock.txt",
 		"supportURL": "https://cert.pl/lista-ostrzezen/"
 	},
 	"ROU-1": {

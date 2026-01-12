@@ -19,6 +19,10 @@
     "message": "Ρυθμίσεις",
     "description": "appears as tab name in dashboard"
   },
+  "customFiltersPageName": {
+    "message": "Προσαρμοσμένα φίλτρα",
+    "description": "appears as tab name in dashboard"
+  },
   "developPageName": {
     "message": "Ανάπτυξη",
     "description": "appears as tab name in dashboard. Inspired from 'Develop' menu in Safari, see https://developer.apple.com/documentation/safari-developer-tools/develop-menu"
@@ -34,6 +38,10 @@
   "popupFilteringModeLabel": {
     "message": "λειτουργία φιλτραρίσματος",
     "description": "Label in the popup panel for the current filtering mode"
+  },
+  "popupLocalToolsLabel": {
+    "message": "Για αυτόν τον ιστότοπο",
+    "description": "Label in the popup panel for the local tools section"
   },
   "popupTipReport": {
     "message": "Αναφορά ενός ζητήματος σε αυτόν τον ιστότοπο",
@@ -78,6 +86,14 @@
   "3pGroupRegions": {
     "message": "Περιοχές, γλώσσες",
     "description": "Header for a ruleset section in 'Filter lists pane'"
+  },
+  "customFiltersImportExportLabel": {
+    "message": "Εισαγωγή / Εξαγωγή",
+    "description": "Text label heading the import/export area of custom filters"
+  },
+  "customFiltersImportTextareaPlaceholder": {
+    "message": "Επικολλήστε εδώ για προσθέσετε φίλτρα για συγκεκριμένα διακοσμητικά",
+    "description": "Placeholder text which describes the purpose of the textarea widget"
   },
   "aboutChangelog": {
     "message": "Αρχείο αλλαγών",
@@ -173,7 +189,7 @@
   },
   "supportReportSpecificButton": {
     "message": "Δημιουργία νέας αναφοράς",
-    "description": "Text for button which open an external webpage in Support pane"
+    "description": "Text for button which opens an external web page in Support pane"
   },
   "defaultFilteringModeSectionLabel": {
     "message": "Προεπιλεγμένη λειτουργία φιλτραρίσματος",
@@ -247,16 +263,28 @@
     "message": "Ενεργοποίηση πρόσβασης σε δυνατότητες κατάλληλες για τεχνικούς χρήστες.",
     "description": "Short description for a checkbox in the options page"
   },
+  "settingsBackupRestoreLabel": {
+    "message": "Αντίγραφα ασφαλείας",
+    "description": "The header text for the back up/restore section"
+  },
+  "settingsBackupRestoreSummary": {
+    "message": "Δημιουργήστε ένα αντίγραφο ασφαλείας των προσαρμοσμένων ρυθμίσεών σας ή επαναφέρετε τις προσαρμοσμένες ρυθμίσεις από ένα αρχείο αντιγράφου ασφαλείας.",
+    "description": "A summary description of the back up/restore section."
+  },
+  "settingsBackupRestoreLegend": {
+    "message": "Η επαναφορά θα έχει ως αποτέλεσμα την αντικατάσταση των τρεχόντων προσαρμοσμένων ρυθμίσεών σας.",
+    "description": "Important information about the back up/restore section."
+  },
   "findListsPlaceholder": {
     "message": "Εύρεση λιστών",
     "description": "Placeholder for the input field used to find lists"
   },
   "strictblockTitle": {
-    "message": "Αποκλησμένη σελίδα",
-    "description": "Webpage title for the strict-blocked page"
+    "message": "Αποκλεισμένη σελίδα",
+    "description": "Web page title for the strict-blocked page"
   },
   "strictblockSentence1": {
-    "message": "Το uBO Lite εμπόδισε τη φόρτωση στης παρακάτω σελίδας:",
+    "message": "Το uBO Lite εμπόδισε τη φόρτωση της παρακάτω σελίδας:",
     "description": "Sentence used in the strict-blocked page"
   },
   "strictblockReasonSentence1": {
@@ -264,7 +292,7 @@
     "description": "Text informing about what is causing the page to be blocked"
   },
   "strictblockRedirectSentence1": {
-    "message": "Η αποκλεισμένη σελίδα θέλει να κάνει ανακατεύθυνση σε άλλο ιστότοπο. Αν επιλέξετε να συνεχίσετε, θα μεταβείτε απευθείας στο: {{url}}",
+    "message": "Η αποκλεισμένη σελίδα θέλει να κάνει ανακατεύθυνση σε άλλον ιστότοπο. Αν επιλέξετε να συνεχίσετε, θα μεταβείτε απευθείας στο: {{url}}",
     "description": "Text warning about an incoming redirect"
   },
   "strictblockNoParamsPrompt": {
@@ -273,7 +301,7 @@
   },
   "strictblockBack": {
     "message": "Επιστροφή",
-    "description": "A button to go back to the previous webpage"
+    "description": "A button to go back to the previous web page"
   },
   "strictblockClose": {
     "message": "Κλείσιμο του παραθύρου",
@@ -294,6 +322,14 @@
   "zapperTipQuit": {
     "message": "Έξοδος από λειτουργία αφαίρεσης στοιχείων",
     "description": "Tooltip for the button used to exit zapper mode"
+  },
+  "pickerTipEnter": {
+    "message": "Δημιουργία προσαρμοσμένου φίλτρου",
+    "description": "Label for the menu entry to create cosmetic filters"
+  },
+  "unpickerTipEnter": {
+    "message": "Αφαίρεση προσαρμοσμένου φίλτρου",
+    "description": "Label for the menu entry to delete cosmetic filters"
   },
   "developDropdownLabel": {
     "message": "Προβολή:",
@@ -327,6 +363,10 @@
     "message": "Επαναφορά",
     "description": "Text for buttons used to revert changes"
   },
+  "addButton": {
+    "message": "Προσθήκη",
+    "description": "Text for buttons used to add content"
+  },
   "importAndAppendButton": {
     "message": "Εισαγωγή και προσθήκη…",
     "description": "Text for buttons used to import and append content"
@@ -335,6 +375,22 @@
     "message": "Εξαγωγή…",
     "description": "Text for buttons used to export content"
   },
+  "backupButton": {
+    "message": "Δημιουργία αντιγράφου ασφαλείας…",
+    "description": "Text for buttons used to back up content"
+  },
+  "restoreButton": {
+    "message": "Επαναφορά ρυθμίσεων…",
+    "description": "Text for buttons used to restore content"
+  },
+  "resetToDefaultButton": {
+    "message": "Επαναφορά στις προεπιλεγμένες ρυθμίσεις…",
+    "description": "Text for buttons used to reset configurations to default"
+  },
+  "resetToDefaultConfirm": {
+    "message": "Όλες οι προσαρμοσμένες ρυθμίσεις σας θα διαγραφούν. Σίγουρα θέλετε να επαναφέρετε τις προεπιλεγμένες ρυθμίσεις;",
+    "description": "Message asking user to confirm reset to default settings"
+  },
   "dnrRulesWarning": {
     "message": "Να μην προστίθενται περιεχόμενο από μη αξιόπιστες πηγές.",
     "description": "Short description of the DNR rules editor pane"
@@ -342,5 +398,25 @@
   "dnrRulesCountInfo": {
     "message": "Σύνολο εγγεγραμμένων κανόνων: {count}",
     "description": "Short sentence to report the number of currently registered DNR rules"
+  },
+  "pickerSliderLabel": {
+    "message": "Μετακινήστε το ρυθμιστικό για να επιλέξετε την καλύτερη αντιστοίχιση",
+    "description": "Label to describe the purpose of the slider"
+  },
+  "pickerPick": {
+    "message": "Επιλογή",
+    "description": "Text for the button to re-enter element-picking mode"
+  },
+  "pickerPreview": {
+    "message": "Προεπισκόπηση",
+    "description": "Text for the button to activate preview mode"
+  },
+  "pickerCreate": {
+    "message": "Δημιουργία",
+    "description": "Text for the button to create the filter"
+  },
+  "unpickerUsage": {
+    "message": "Επιλέξτε ένα φίλτρο παρακάτω για να επισημάνετε τα στοιχεία που αντιστοιχούν στην ιστοσελίδα. Κάντε κλικ στον κάδο απορριμμάτων για να αφαιρέσετε ένα φίλτρο.",
+    "description": "Summary description on how to use the tool to remove custom filters"
   }
 }

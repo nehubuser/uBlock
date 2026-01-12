@@ -21,8 +21,46 @@
 
 
 export const webext = self.browser;
-export const INITIATOR_DOMAINS = 'domains';
-export const EXCLUDED_INITIATOR_DOMAINS = 'excludedDomains';
+
+/******************************************************************************/
+
+// Workaround for:
+// https://github.com/uBlockOrigin/uBOL-home/issues/515
+// https://bugs.webkit.org/show_bug.cgi?id=300236
+//
+// For each realm, we will force-reload registered rulesets once.
+
+const { windows } = webext;
+const  NORMAL_REALM = 0b01;
+const PRIVATE_REALM = 0b10;
+const ALL_REALMS = NORMAL_REALM | PRIVATE_REALM;
+
+let seenRealms = 0b00;
+let seenRealmsReady = webext.storage.session.get('safari.seenRealms').then(bin => {
+    seenRealms |= bin?.['safari.seenRealms'] ?? 0;
+}).catch(( ) => {
+});
+
+async function forceEnableRulesets(windowId) {
+    await seenRealmsReady;
+    if ( seenRealms === ALL_REALMS ) { return; }
+    if ( windowId === windows.WINDOW_ID_NONE ) { return; }
+    const details = await windows.get(windowId, { windowTypes: [ 'normal' ] });
+    const incognito = details?.incognito;
+    if ( typeof incognito !== 'boolean' ) { return; }
+    const currentRealm = incognito ? PRIVATE_REALM : NORMAL_REALM;
+    if ( (seenRealms & currentRealm) !== 0 ) { return; }
+    seenRealms |= currentRealm;
+    webext.storage.session.set({ 'safari.seenRealms': seenRealms });
+    const ids = await nativeDNR.getEnabledRulesets();
+    if ( ids.length === 0 ) { return; }
+    nativeDNR.updateEnabledRulesets({
+        disableRulesetIds: ids.slice(),
+        enableRulesetIds: ids.slice(),
+    });
+}
+
+windows.onFocusChanged.addListener(forceEnableRulesets);
 
 /******************************************************************************/
 
@@ -86,6 +124,27 @@ const isSameRules = (a, b) => {
 
 /******************************************************************************/
 
+export function normalizeDNRRules(rules, ruleIds) {
+    if ( Array.isArray(rules) === false ) { return rules; }
+    const selectedRules = Array.isArray(ruleIds)
+        ? rules.filter(rule => ruleIds.includes(rule.id))
+        : rules;
+    selectedRules.forEach(rule => {
+        const { condition } = rule;
+        if ( Array.isArray(condition.domains) ) {
+            condition.initiatorDomains = condition.domains;
+            delete condition.domains;
+        }
+        if ( Array.isArray(condition.excludedDomains) ) {
+            condition.excludedInitiatorDomains = condition.excludedDomains;
+            delete condition.excludedDomains;
+        }
+    });
+    return selectedRules;
+}
+
+/******************************************************************************/
+
 export const dnr = {
     DYNAMIC_RULESET_ID: '_dynamic',
     MAX_NUMBER_OF_ENABLED_STATIC_RULESETS: nativeDNR.MAX_NUMBER_OF_ENABLED_STATIC_RULESETS,
@@ -97,8 +156,7 @@ export const dnr = {
         return new Promise(resolve => {
             nativeDNR.getDynamicRules(rules => {
                 if ( Array.isArray(rules) === false ) { return resolve([]); }
-                if ( Array.isArray(ruleIds) === false ) { return resolve(rules); }
-                return resolve(rules.filter(rule => ruleIds.includes(rule.id)));
+                return resolve(normalizeDNRRules(rules, ruleIds));
             });
         });
     },
@@ -112,8 +170,7 @@ export const dnr = {
         return new Promise(resolve => {
             nativeDNR.getSessionRules(rules => {
                 if ( Array.isArray(rules) === false ) { return resolve([]); }
-                if ( Array.isArray(ruleIds) === false ) { return resolve(rules); }
-                return resolve(rules.filter(rule => ruleIds.includes(rule.id)));
+                return resolve(normalizeDNRRules(rules, ruleIds));
             });
         });
     },
@@ -125,8 +182,10 @@ export const dnr = {
         if ( optionsAfter === undefined ) { return; }
         return nativeDNR.updateDynamicRules(optionsAfter);
     },
-    updateEnabledRulesets(...args) {
-        return nativeDNR.updateEnabledRulesets(...args);
+    async updateEnabledRulesets(...args) {
+        await nativeDNR.updateEnabledRulesets(...args);
+        seenRealms = 0b00;
+        await webext.storage.session.remove('safari.seenRealms');
     },
     async updateSessionRules(optionsBefore) {
         const optionsAfter = prepareUpdateRules(optionsBefore);

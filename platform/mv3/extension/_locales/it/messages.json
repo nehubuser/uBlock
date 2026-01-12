@@ -4,7 +4,7 @@
     "description": "extension name."
   },
   "extShortDesc": {
-    "message": "Un efficiente bloccatore dei contenuti. Blocca annunci, tracker, minatori e altro ancora subito dopo l'installazione.",
+    "message": "Un efficiente bloccatore di contenuti. Blocca annunci, tracker, minatori e altro ancora subito dopo l'installazione.",
     "description": "this will be in the Chrome web store: must be 132 characters or less"
   },
   "perRulesetStats": {
@@ -17,6 +17,10 @@
   },
   "settingsPageName": {
     "message": "Impostazioni",
+    "description": "appears as tab name in dashboard"
+  },
+  "customFiltersPageName": {
+    "message": "Filtri personalizzati",
     "description": "appears as tab name in dashboard"
   },
   "developPageName": {
@@ -34,6 +38,10 @@
   "popupFilteringModeLabel": {
     "message": "Modalità di filtraggio",
     "description": "Label in the popup panel for the current filtering mode"
+  },
+  "popupLocalToolsLabel": {
+    "message": "In questo sito web",
+    "description": "Label in the popup panel for the local tools section"
   },
   "popupTipReport": {
     "message": "Segnala un problema con questo sito",
@@ -78,6 +86,14 @@
   "3pGroupRegions": {
     "message": "Lingue e regioni",
     "description": "Header for a ruleset section in 'Filter lists pane'"
+  },
+  "customFiltersImportExportLabel": {
+    "message": "Importa / Esporta",
+    "description": "Text label heading the import/export area of custom filters"
+  },
+  "customFiltersImportTextareaPlaceholder": {
+    "message": "Incolla qui i filtri cosmetici specifici da aggiungere",
+    "description": "Placeholder text which describes the purpose of the textarea widget"
   },
   "aboutChangelog": {
     "message": "Reg. modifiche",
@@ -168,12 +184,12 @@
     "description": "An entry in the widget used to select the type of issue"
   },
   "supportS6Checkbox1": {
-    "message": "Contrassegna la pagina web come “NSFW”. (<a href=\"https://wikipedia.org/wiki/Not_safe_for_work\">“Not Safe For Work”</a>)",
+    "message": "Contrassegna la pagina web come “NSFW”. (<a href=\"https://wikipedia.org/wiki/Not_safe_for_work\">“non adatta ai minori”</a>)",
     "description": "A checkbox to use for NSFW sites"
   },
   "supportReportSpecificButton": {
     "message": "Crea nuova segnalazione in GitHub",
-    "description": "Text for button which open an external webpage in Support pane"
+    "description": "Text for button which opens an external web page in Support pane"
   },
   "defaultFilteringModeSectionLabel": {
     "message": "Modalità di filtraggio predefinita",
@@ -247,13 +263,25 @@
     "message": "Abilita l'accesso a funzioni adatte a utenti tecnici.",
     "description": "Short description for a checkbox in the options page"
   },
+  "settingsBackupRestoreLabel": {
+    "message": "Backup",
+    "description": "The header text for the back up/restore section"
+  },
+  "settingsBackupRestoreSummary": {
+    "message": "Copia le impostazioni personali in un file, o rimuovile da un file.",
+    "description": "A summary description of the back up/restore section."
+  },
+  "settingsBackupRestoreLegend": {
+    "message": "Il ripristino sovrascriverà le impostazioni personali in uso.",
+    "description": "Important information about the back up/restore section."
+  },
   "findListsPlaceholder": {
     "message": "Trova elenchi",
     "description": "Placeholder for the input field used to find lists"
   },
   "strictblockTitle": {
     "message": "Pagina bloccata",
-    "description": "Webpage title for the strict-blocked page"
+    "description": "Web page title for the strict-blocked page"
   },
   "strictblockSentence1": {
     "message": "uBO Lite ha impedito alla seguente pagina di caricarsi:",
@@ -273,7 +301,7 @@
   },
   "strictblockBack": {
     "message": "Torna indietro",
-    "description": "A button to go back to the previous webpage"
+    "description": "A button to go back to the previous web page"
   },
   "strictblockClose": {
     "message": "Chiudi questa finestra",
@@ -294,6 +322,14 @@
   "zapperTipQuit": {
     "message": "Esci dalla modalità blocco rapido",
     "description": "Tooltip for the button used to exit zapper mode"
+  },
+  "pickerTipEnter": {
+    "message": "Crea un filtro personalizzato",
+    "description": "Label for the menu entry to create cosmetic filters"
+  },
+  "unpickerTipEnter": {
+    "message": "Rimuovi un filtro personalizzato",
+    "description": "Label for the menu entry to delete cosmetic filters"
   },
   "developDropdownLabel": {
     "message": "Vista:",
@@ -327,6 +363,10 @@
     "message": "Ritorna",
     "description": "Text for buttons used to revert changes"
   },
+  "addButton": {
+    "message": "Aggiungi",
+    "description": "Text for buttons used to add content"
+  },
   "importAndAppendButton": {
     "message": "Importa e accoda…",
     "description": "Text for buttons used to import and append content"
@@ -335,6 +375,22 @@
     "message": "Esporta…",
     "description": "Text for buttons used to export content"
   },
+  "backupButton": {
+    "message": "Copia…",
+    "description": "Text for buttons used to back up content"
+  },
+  "restoreButton": {
+    "message": "Ripristina…",
+    "description": "Text for buttons used to restore content"
+  },
+  "resetToDefaultButton": {
+    "message": "Reimposta configurazione predefinita…",
+    "description": "Text for buttons used to reset configurations to default"
+  },
+  "resetToDefaultConfirm": {
+    "message": "Le impostazioni personali saranno rimosse. Vuoi veramente reimpostare i valori predefiniti?",
+    "description": "Message asking user to confirm reset to default settings"
+  },
   "dnrRulesWarning": {
     "message": "Non aggiungere contenuti da fonti non affidabili",
     "description": "Short description of the DNR rules editor pane"
@@ -342,5 +398,25 @@
   "dnrRulesCountInfo": {
     "message": "Numero di regole registrate: {count}",
     "description": "Short sentence to report the number of currently registered DNR rules"
+  },
+  "pickerSliderLabel": {
+    "message": "Sposta il cursore per selezionare la corrispondenza migliore",
+    "description": "Label to describe the purpose of the slider"
+  },
+  "pickerPick": {
+    "message": "Scegli",
+    "description": "Text for the button to re-enter element-picking mode"
+  },
+  "pickerPreview": {
+    "message": "Anteprima",
+    "description": "Text for the button to activate preview mode"
+  },
+  "pickerCreate": {
+    "message": "Crea",
+    "description": "Text for the button to create the filter"
+  },
+  "unpickerUsage": {
+    "message": "Seleziona un filtro per evidenziare gli elementi corrispondenti nella pagina web. Clicca il cestino per rimuovere un filtro.",
+    "description": "Summary description on how to use the tool to remove custom filters"
   }
 }

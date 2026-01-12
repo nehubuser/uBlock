@@ -1,5 +1,10 @@
-nav {
+header {
     background-color: var(--surface-1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    }
+nav {
     border: 0;
     border-bottom: 1px solid var(--border-1);
     display: flex;
@@ -7,9 +12,6 @@ nav {
     flex-wrap: wrap;
     overflow-x: hidden;
     padding: 0;
-    position: sticky;
-    top: 0;
-    z-index: 100;
     }
 nav > .tabButton {
     background-color: transparent;
@@ -34,6 +36,7 @@ nav > .tabButton:hover {
 
 body[data-pane="settings"] #dashboard-nav .tabButton[data-pane="settings"],
 body[data-pane="rulesets"] #dashboard-nav .tabButton[data-pane="rulesets"],
+body[data-pane="filters"] #dashboard-nav .tabButton[data-pane="filters"],
 body[data-pane="develop"] #dashboard-nav .tabButton[data-pane="develop"],
 body[data-pane="about"] #dashboard-nav .tabButton[data-pane="about"] {
     background-color: var(--dashboard-tab-active-surface);
@@ -44,21 +47,31 @@ body[data-pane="about"] #dashboard-nav .tabButton[data-pane="about"] {
 body:not([data-develop="true"]) #dashboard-nav .tabButton[data-pane="develop"] {
     display: none;
     }
+body:not([data-pane="rulesets"]) header [data-pane-related="rulesets"] {
+    display: none;
+    }
 
 body > section {
+    box-sizing: border-box;
     display: none;
+    padding: 0 var(--default-gap-xxsmall);
     padding-bottom: 2rem;
     }
-body[data-pane="settings"] > section[data-pane="settings"],
-body[data-pane="rulesets"] > section[data-pane="rulesets"],
-body[data-pane="develop"] > section[data-pane="develop"],
-body[data-pane="about"] > section[data-pane="about"] {
+body [data-pane-related] {
+    padding: 0 var(--default-gap-xxsmall);
+    }
+
+body[data-pane="settings"]:not(.busy) > section[data-pane="settings"],
+body[data-pane="rulesets"]:not(.busy) > section[data-pane="rulesets"],
+body[data-pane="filters"]:not(.busy) > section[data-pane="filters"],
+body[data-pane="develop"]:not(.busy) > section[data-pane="develop"],
+body[data-pane="about"]:not(.busy) > section[data-pane="about"],
+body.busy[data-pane] > section[data-pane="busy"] {
     display: block;
     }
 
 /* high dpi devices */
 :root.hidpi .tabButton {
-    font-family: Metropolis, sans-serif;
     font-weight: 600;
     letter-spacing: 0.5px;
     }

@@ -4,7 +4,7 @@
     "description": "extension name."
   },
   "extShortDesc": {
-    "message": "Blokátor obsahu vyžadující méně oprávnění. Blokuje reklamy, sledovače, těžaře a jiné ihned po instalaci.",
+    "message": "Účinný blokátor obsahu. Okamžitě po instalaci blokuje reklamy, sledovače, těžaře a další.",
     "description": "this will be in the Chrome web store: must be 132 characters or less"
   },
   "perRulesetStats": {
@@ -17,6 +17,10 @@
   },
   "settingsPageName": {
     "message": "Nastavení",
+    "description": "appears as tab name in dashboard"
+  },
+  "customFiltersPageName": {
+    "message": "Vlastní filtry",
     "description": "appears as tab name in dashboard"
   },
   "developPageName": {
@@ -34,6 +38,10 @@
   "popupFilteringModeLabel": {
     "message": "Filtrovací režim",
     "description": "Label in the popup panel for the current filtering mode"
+  },
+  "popupLocalToolsLabel": {
+    "message": "Na této webové stránce",
+    "description": "Label in the popup panel for the local tools section"
   },
   "popupTipReport": {
     "message": "Nahlásit problém na této webové stránce",
@@ -78,6 +86,14 @@
   "3pGroupRegions": {
     "message": "Regionální, jazykové",
     "description": "Header for a ruleset section in 'Filter lists pane'"
+  },
+  "customFiltersImportExportLabel": {
+    "message": "Import / Export",
+    "description": "Text label heading the import/export area of custom filters"
+  },
+  "customFiltersImportTextareaPlaceholder": {
+    "message": "Vložte sem konkrétní kosmetické filtry, které chcete přidat",
+    "description": "Placeholder text which describes the purpose of the textarea widget"
   },
   "aboutChangelog": {
     "message": "Přehled změn",
@@ -173,7 +189,7 @@
   },
   "supportReportSpecificButton": {
     "message": "Vytvořit nové hlášení",
-    "description": "Text for button which open an external webpage in Support pane"
+    "description": "Text for button which opens an external web page in Support pane"
   },
   "defaultFilteringModeSectionLabel": {
     "message": "Výchozí filtrovací režim",
@@ -247,13 +263,25 @@
     "message": "Umožňuje přístup k funkcím vhodným pro technicky zdatné uživatele.",
     "description": "Short description for a checkbox in the options page"
   },
+  "settingsBackupRestoreLabel": {
+    "message": "Záloha",
+    "description": "The header text for the back up/restore section"
+  },
+  "settingsBackupRestoreSummary": {
+    "message": "Zálohování vlastních nastavení do souboru nebo obnovení vlastních nastavení ze souboru.",
+    "description": "A summary description of the back up/restore section."
+  },
+  "settingsBackupRestoreLegend": {
+    "message": "Obnovení přepíše všechna vaše aktuální vlastní nastavení.",
+    "description": "Important information about the back up/restore section."
+  },
   "findListsPlaceholder": {
     "message": "Najít seznamy",
     "description": "Placeholder for the input field used to find lists"
   },
   "strictblockTitle": {
     "message": "Stránka zablokována",
-    "description": "Webpage title for the strict-blocked page"
+    "description": "Web page title for the strict-blocked page"
   },
   "strictblockSentence1": {
     "message": "uBO Lite zabránil načtení následující stránky:",
@@ -273,10 +301,10 @@
   },
   "strictblockBack": {
     "message": "Zpět",
-    "description": "A button to go back to the previous webpage"
+    "description": "A button to go back to the previous web page"
   },
   "strictblockClose": {
-    "message": "Zavřít toto okno",
+    "message": "Zavřít okno",
     "description": "A button to close the current tab"
   },
   "strictblockDontWarn": {
@@ -295,28 +323,36 @@
     "message": "Opustit režim dočasného skrytí prvků",
     "description": "Tooltip for the button used to exit zapper mode"
   },
+  "pickerTipEnter": {
+    "message": "Vytvořit vlastní filtr",
+    "description": "Label for the menu entry to create cosmetic filters"
+  },
+  "unpickerTipEnter": {
+    "message": "Odebrat vlastní filtr",
+    "description": "Label for the menu entry to delete cosmetic filters"
+  },
   "developDropdownLabel": {
-    "message": "View:",
+    "message": "Zobrazit:",
     "description": "A label of a dropdown list"
   },
   "developOptionFilteringModeDetails": {
-    "message": "Filtering mode details",
+    "message": "Detaily filtovacího módu",
     "description": "An option in a dropdown list"
   },
   "developOptionCustomDnrRules": {
-    "message": "Custom DNR rules",
+    "message": "Vlastní pravidla DNR",
     "description": "An option in a dropdown list"
   },
   "developOptionDnrRulesOf": {
-    "message": "DNR rules of …",
+    "message": "DNR pravidla …",
     "description": "A section header in a dropdown list"
   },
   "developOptionDynamicRuleset": {
-    "message": "Dynamic ruleset",
+    "message": "Dynamický seznam pravidel",
     "description": "An option in a dropdown list"
   },
   "developOptionSessionRuleset": {
-    "message": "Session ruleset",
+    "message": "",
     "description": "An option in a dropdown list"
   },
   "saveButton": {
@@ -327,6 +363,10 @@
     "message": "Vrátit",
     "description": "Text for buttons used to revert changes"
   },
+  "addButton": {
+    "message": "Přidat",
+    "description": "Text for buttons used to add content"
+  },
   "importAndAppendButton": {
     "message": "Importovat a připojit…",
     "description": "Text for buttons used to import and append content"
@@ -335,12 +375,48 @@
     "message": "Exportovat…",
     "description": "Text for buttons used to export content"
   },
+  "backupButton": {
+    "message": "Zálohovat…",
+    "description": "Text for buttons used to back up content"
+  },
+  "restoreButton": {
+    "message": "Obnovit…",
+    "description": "Text for buttons used to restore content"
+  },
+  "resetToDefaultButton": {
+    "message": "Reset to default settings…",
+    "description": "Text for buttons used to reset configurations to default"
+  },
+  "resetToDefaultConfirm": {
+    "message": "All your custom settings will be removed. Do you really want to reset to default settings?",
+    "description": "Message asking user to confirm reset to default settings"
+  },
   "dnrRulesWarning": {
-    "message": "Do not add content from untrusted sources",
+    "message": "Nepřidávat filtry z nedůvěryhodných zdrojů",
     "description": "Short description of the DNR rules editor pane"
   },
   "dnrRulesCountInfo": {
     "message": "Počet registrovaných pravidel: {count}",
     "description": "Short sentence to report the number of currently registered DNR rules"
+  },
+  "pickerSliderLabel": {
+    "message": "Posunutím jezdce vyberte nejlepší shodu",
+    "description": "Label to describe the purpose of the slider"
+  },
+  "pickerPick": {
+    "message": "Vybrat",
+    "description": "Text for the button to re-enter element-picking mode"
+  },
+  "pickerPreview": {
+    "message": "Náhled",
+    "description": "Text for the button to activate preview mode"
+  },
+  "pickerCreate": {
+    "message": "Vytvořit",
+    "description": "Text for the button to create the filter"
+  },
+  "unpickerUsage": {
+    "message": "Výběrem níže uvedeného filtru zvýrazníte odpovídající prvky na webové stránce. Kliknutím na koš filtr odstraníte.",
+    "description": "Summary description on how to use the tool to remove custom filters"
   }
 }

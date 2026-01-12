@@ -19,6 +19,10 @@
     "message": "Sätted",
     "description": "appears as tab name in dashboard"
   },
+  "customFiltersPageName": {
+    "message": "Isetehtud filtrid",
+    "description": "appears as tab name in dashboard"
+  },
   "developPageName": {
     "message": "Arendajale",
     "description": "appears as tab name in dashboard. Inspired from 'Develop' menu in Safari, see https://developer.apple.com/documentation/safari-developer-tools/develop-menu"
@@ -35,8 +39,12 @@
     "message": "filtreerimisrežiim",
     "description": "Label in the popup panel for the current filtering mode"
   },
+  "popupLocalToolsLabel": {
+    "message": "Sellel veebilehel",
+    "description": "Label in the popup panel for the local tools section"
+  },
   "popupTipReport": {
-    "message": "Teavita veast selle veebilehega",
+    "message": "Teavita veast",
     "description": "Tooltip used for the 'chat' icon in the panel"
   },
   "popupTipDashboard": {
@@ -78,6 +86,14 @@
   "3pGroupRegions": {
     "message": "Regioonid, keeled",
     "description": "Header for a ruleset section in 'Filter lists pane'"
+  },
+  "customFiltersImportExportLabel": {
+    "message": "Impordi/ekspordi",
+    "description": "Text label heading the import/export area of custom filters"
+  },
+  "customFiltersImportTextareaPlaceholder": {
+    "message": "Kindlate kosmeetiliste filtrite lisamiseks asetage need siia",
+    "description": "Placeholder text which describes the purpose of the textarea widget"
   },
   "aboutChangelog": {
     "message": "Muudatuste logi",
@@ -173,7 +189,7 @@
   },
   "supportReportSpecificButton": {
     "message": "Loo GitHubis uus aruanne",
-    "description": "Text for button which open an external webpage in Support pane"
+    "description": "Text for button which opens an external web page in Support pane"
   },
   "defaultFilteringModeSectionLabel": {
     "message": "Tavaline filtreerimisrežiim",
@@ -247,13 +263,25 @@
     "message": "Luba juurdepääs tehnilise taibuga kasutajatele mõeldud võimalustele.",
     "description": "Short description for a checkbox in the options page"
   },
+  "settingsBackupRestoreLabel": {
+    "message": "Varundamine / taastamine",
+    "description": "The header text for the back up/restore section"
+  },
+  "settingsBackupRestoreSummary": {
+    "message": "Varunda eriseadistused faili või taasta need failist.",
+    "description": "A summary description of the back up/restore section."
+  },
+  "settingsBackupRestoreLegend": {
+    "message": "Taastamine asendab olemasolevad seadistused.",
+    "description": "Important information about the back up/restore section."
+  },
   "findListsPlaceholder": {
     "message": "Otsi nimekirju",
     "description": "Placeholder for the input field used to find lists"
   },
   "strictblockTitle": {
     "message": "Lehe sirvimine piiratud",
-    "description": "Webpage title for the strict-blocked page"
+    "description": "Web page title for the strict-blocked page"
   },
   "strictblockSentence1": {
     "message": "uBO Lite ennetas järgmise veebilehe laadimist:",
@@ -273,7 +301,7 @@
   },
   "strictblockBack": {
     "message": "Tagasi",
-    "description": "A button to go back to the previous webpage"
+    "description": "A button to go back to the previous web page"
   },
   "strictblockClose": {
     "message": "Sulge see aken",
@@ -288,35 +316,43 @@
     "description": "A button to navigate to the blocked page"
   },
   "zapperTipEnter": {
-    "message": "Sisene elemendi hävitusrežiimi",
+    "message": "Eemalda element",
     "description": "Tooltip for the button used to enter zapper mode"
   },
   "zapperTipQuit": {
     "message": "Välju elemendi hävitusrežiimist",
     "description": "Tooltip for the button used to exit zapper mode"
   },
+  "pickerTipEnter": {
+    "message": "Loo ise filter",
+    "description": "Label for the menu entry to create cosmetic filters"
+  },
+  "unpickerTipEnter": {
+    "message": "Eemalda enda filter",
+    "description": "Label for the menu entry to delete cosmetic filters"
+  },
   "developDropdownLabel": {
-    "message": "View:",
+    "message": "Vaade:",
     "description": "A label of a dropdown list"
   },
   "developOptionFilteringModeDetails": {
-    "message": "Filtering mode details",
+    "message": "Filtreerimisrežiimi andmed",
     "description": "An option in a dropdown list"
   },
   "developOptionCustomDnrRules": {
-    "message": "Custom DNR rules",
+    "message": "Enda aadressiresolverite avastamise reeglid",
     "description": "An option in a dropdown list"
   },
   "developOptionDnrRulesOf": {
-    "message": "DNR rules of …",
+    "message": "Aadressiresolverite avastamise reeglid sellelt …",
     "description": "A section header in a dropdown list"
   },
   "developOptionDynamicRuleset": {
-    "message": "Dynamic ruleset",
+    "message": "Dünaamiline reeglitekogumik",
     "description": "An option in a dropdown list"
   },
   "developOptionSessionRuleset": {
-    "message": "Session ruleset",
+    "message": "Seansi reeglitekogumik",
     "description": "An option in a dropdown list"
   },
   "saveButton": {
@@ -327,6 +363,10 @@
     "message": "Taasta",
     "description": "Text for buttons used to revert changes"
   },
+  "addButton": {
+    "message": "Lisa",
+    "description": "Text for buttons used to add content"
+  },
   "importAndAppendButton": {
     "message": "Impordi ja lisa…",
     "description": "Text for buttons used to import and append content"
@@ -335,12 +375,48 @@
     "message": "Ekspordi…",
     "description": "Text for buttons used to export content"
   },
+  "backupButton": {
+    "message": "Varunda…",
+    "description": "Text for buttons used to back up content"
+  },
+  "restoreButton": {
+    "message": "Taasta…",
+    "description": "Text for buttons used to restore content"
+  },
+  "resetToDefaultButton": {
+    "message": "Lähtesta tavaseadetele…",
+    "description": "Text for buttons used to reset configurations to default"
+  },
+  "resetToDefaultConfirm": {
+    "message": "Kõik enda loodud seaded eemaldatakse. Tahad tõesti lähtestada tavaseadetele?",
+    "description": "Message asking user to confirm reset to default settings"
+  },
   "dnrRulesWarning": {
-    "message": "Do not add content from untrusted sources",
+    "message": "Lisa sisu vaid usaldusväärsetest allikatest",
     "description": "Short description of the DNR rules editor pane"
   },
   "dnrRulesCountInfo": {
     "message": "Registreeritud reeglite arv: {count}",
     "description": "Short sentence to report the number of currently registered DNR rules"
+  },
+  "pickerSliderLabel": {
+    "message": "Parima tulemuse saavutamiseks liigutage liugurit",
+    "description": "Label to describe the purpose of the slider"
+  },
+  "pickerPick": {
+    "message": "Vali",
+    "description": "Text for the button to re-enter element-picking mode"
+  },
+  "pickerPreview": {
+    "message": "Eelvaade",
+    "description": "Text for the button to activate preview mode"
+  },
+  "pickerCreate": {
+    "message": "Loo",
+    "description": "Text for the button to create the filter"
+  },
+  "unpickerUsage": {
+    "message": "Valige allolev filter, et tõsta esile veebilehel kattuvad elemendid. Filtri eemaldamiseks klõpsake prügikasti.",
+    "description": "Summary description on how to use the tool to remove custom filters"
   }
 }

@@ -4,7 +4,7 @@
     "description": "extension name."
   },
   "extShortDesc": {
-    "message": "Endlich ein effizienter Blocker, der wenig Prozessorleistung und Arbeitsspeicher verbraucht.",
+    "message": "Ein effizienter Blocker mit geringer CPU- und Speicherauslastung.",
     "description": "this will be in the Chrome web store: must be 132 characters or less"
   },
   "dashboardName": {
@@ -452,7 +452,7 @@
     "description": "This will cause uBO to ignore all generic cosmetic filters."
   },
   "3pIgnoreGenericCosmeticFiltersInfo": {
-    "message": "Allgemeine kosmetische Filter sind kosmetische Filter, die auf alle Websites angewendet werden sollen. Das Aktivieren dieser Option verhindert die Mehrbelastung des Arbeitsspeichers und der CPU, die durch das Verarbeiten allgemeiner kosmetischer Filter auf Websites entsteht.\n\nEs wird empfohlen, diese Option auf weniger leistungsfähigen Geräten zu aktivieren.",
+    "message": "Allgemeine kosmetische Filter können auf alle Websites angewendet werden. Diese Option reduziert die CPU- und Speicherauslastung, die durch das Verarbeiten allgemeiner kosmetischer Filter auf Websites entsteht.\n\nEs wird empfohlen, diese Option auf weniger leistungsfähigen Geräten zu aktivieren.",
     "description": "Describes the purpose of the 'Ignore generic cosmetic filters' feature."
   },
   "3pSuspendUntilListsAreLoaded": {
@@ -897,11 +897,11 @@
   },
   "supportOpenButton": {
     "message": "Öffnen",
-    "description": "Text for button which open an external webpage in Support pane"
+    "description": "Text for button which open an external web page in Support pane"
   },
   "supportReportSpecificButton": {
     "message": "Neue Meldung auf GitHub erstellen",
-    "description": "Text for button which open an external webpage in Support pane"
+    "description": "Text for button which open an external web page in Support pane"
   },
   "supportFindSpecificButton": {
     "message": "Ähnliche Meldungen auf GitHub finden",
@@ -954,10 +954,6 @@
   "supportS5P1": {
     "message": "Im Folgenden sind einige technische Informationen aufgeführt, die nützlich sein können, wenn Freiwillige versuchen, bei der Lösung eines Problems zu helfen.",
     "description": "First paragraph of 'Troubleshooting Information' section in Support pane"
-  },
-  "supportS5P2": {
-    "message": "<b>Wichtig:</b> Potenziell private oder sensible Informationen werden standardmäßig unkenntlich gemacht. Unkenntlich gemachte Informationen können das Lösen eines Problems erschweren.",
-    "description": "Second paragraph of 'Troubleshooting Information' section in Support pane"
   },
   "supportS6H": {
     "message": "Ein Filterproblem melden",
@@ -1019,14 +1015,6 @@
     "message": "Webseite als »NSFW« kennzeichnen (<a href=\"https://wikipedia.org/wiki/Not_safe_for_work\">»Unpassend für den Arbeitsplatz«</a>)",
     "description": "A checkbox to use for NSFW sites"
   },
-  "supportRedact": {
-    "message": "Unkenntlich machen",
-    "description": "Text for 'Redact' button"
-  },
-  "supportUnredact": {
-    "message": "Kenntlich machen",
-    "description": "Text for 'Unredact' button"
-  },
   "aboutPrivacyPolicy": {
     "message": "Datenschutzhinweise",
     "description": "Link to privacy policy on GitHub (English)"
@@ -1064,7 +1052,7 @@
     "description": "Shown in the About pane"
   },
   "aboutCDNsInfo": {
-    "message": "Ein zufällig ausgewähltes CDN wird verwendet, wenn eine Filterliste aktualisiert werden muss.",
+    "message": "Es wird ein zufällig ausgewähltes CDN verwendet, wenn eine Filterliste aktualisiert werden muss.",
     "description": "Shown in the About pane"
   },
   "aboutBackupDataButton": {
@@ -1098,10 +1086,6 @@
   "errorCantConnectTo": {
     "message": "Netzwerkfehler: {{msg}}",
     "description": "English: Network error: {{msg}}"
-  },
-  "subscriberConfirm": {
-    "message": "Folgende URL zu den eigenen Filterlisten hinzufügen?\n\nTitel: »{{title}}«\nURL: {{url}}",
-    "description": "No longer used"
   },
   "subscribeButton": {
     "message": "Abonnieren",
@@ -1194,6 +1178,22 @@
   "docblockedRedirectPrompt": {
     "message": "Die blockierte Seite möchte zu einer anderen Website weiterleiten. Beim Fortfahren wird folgende Seite aufgerufen: {{url}}",
     "description": "Text warning about an incoming redirect"
+  },
+  "docblockedReasonLabel": {
+    "message": "Grund:",
+    "description": "The label which prepend the actual reason why a page was blocked"
+  },
+  "docblockedReasonMalicious": {
+    "message": "Schädlich",
+    "description": "An actual reason why a page was blocked"
+  },
+  "docblockedReasonTracker": {
+    "message": "Tracker",
+    "description": "An actual reason why a page was blocked"
+  },
+  "docblockedReasonDisreputable": {
+    "message": "Unseriös",
+    "description": "An actual reason why a page was blocked"
   },
   "cloudPush": {
     "message": "In den Cloud-Speicher exportieren",
